@@ -47,8 +47,8 @@ export default function App() {
         },
         body: JSON.stringify({
           'email': newsletterEmail,
-          '_subject': 'Welcome to Little Lotus Wellness Newsletter!',
-          '_autoresponse': 'Hello lovely customer,\nWelcome to Little Lotus Wellness Newsletter.\n\nSincerely,\nFounder',
+          '_subject': 'Welcome to Little Lotus Wellness! 🎉',
+          '_autoresponse': 'Hi there, thank you for subscribing to our newsletter! Stay tuned for the latest updates and exclusive offers.',
           'Message': 'New subscriber registered for the newsletter.'
         })
       });
