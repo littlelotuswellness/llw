@@ -79,7 +79,8 @@ export default function App() {
             >
               <img src="/logo.jpg" alt="Little Lotus Wellness Logo" className="h-16 w-16 object-contain rounded-full border border-rose-100 shadow-sm" />
               <div className="flex flex-col">
-                <span className="text-lg sm:text-2xl font-serif text-[#6b8e7a] leading-none tracking-wide">Little Lotus Wellness</span>
+                <span className="text-xl sm:text-2xl font-serif text-[#6b8e7a] leading-none tracking-wide">Little Lotus</span>
+                <span className="text-[10px] sm:text-xs uppercase tracking-widest text-red-500 font-semibold mt-1">Wellness</span>
               </div>
             </div>
 
