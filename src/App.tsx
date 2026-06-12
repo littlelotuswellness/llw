@@ -772,13 +772,15 @@ function BookingModal({ onClose }: BookingModalProps) {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
+          'email': email, // Required by FormSubmit for autoresponse
           'Parent Name': parentName,
           'Child Age': childAge,
-          'Email': email,
           'Service Needed': service,
           'Preferred Date (MM/DD/YYYY)': formattedDate,
           'Preferred Time': timeSlot,
-          'Notes / Sensory Needs': notes
+          'Notes / Sensory Needs': notes,
+          '_subject': 'Appointment Request Confirmed - Little Lotus Wellness 🪷',
+          '_autoresponse': `Hi ${parentName},\n\nThank you for requesting an appointment with Little Lotus Wellness! We have received your request and will contact you shortly to confirm your booking.\n\nHere are your request details:\n- Service: ${service}\n- Date: ${formattedDate}\n- Time Slot: ${timeSlot}\n\nSincerely,\nLittle Lotus Wellness\nMarietta, GA`
         })
       });
 
