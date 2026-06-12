@@ -119,7 +119,9 @@ export default function App() {
               </div>
               <div className="flex items-center gap-3">
                 <Mail size={18} className="text-rose-200 shrink-0" />
-                <p>littlelotuswellness@gmail.com</p>
+                <a href="mailto:littlelotuswellness@proton.me" className="hover:underline hover:text-white transition-colors">
+                  littlelotuswellness@proton.me
+                </a>
               </div>
             </div>
           </div>
@@ -512,7 +514,9 @@ function FaqView() {
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="text-[#6b8e7a] shrink-0" size={20} />
-                <span>littlelotuswellness@gmail.com</span>
+                <a href="mailto:littlelotuswellness@proton.me" className="hover:underline hover:text-[#5a7a68] transition-colors">
+                  littlelotuswellness@proton.me
+                </a>
               </li>
             </ul>
             <div className="mt-6 pt-6 border-t border-rose-200">
