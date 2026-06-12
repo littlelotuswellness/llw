@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Heart, 
   Leaf, 
@@ -625,6 +625,9 @@ function BookingModal({ onClose }: BookingModalProps) {
   const [timeSlot, setTimeSlot] = useState('');
   const [notes, setNotes] = useState('');
 
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [availability, setAvailability] = useState<Record<string, { status: string; available_slots: number }>>({});
+
   const timeSlots = [
     '09:00 AM',
     '10:00 AM',
@@ -637,7 +640,46 @@ function BookingModal({ onClose }: BookingModalProps) {
     '05:00 PM'
   ];
 
-  const today = new Date().toISOString().split('T')[0];
+  // Fetch date availability on mount
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      try {
+        const response = await fetch('/api/availability');
+        if (response.ok) {
+          const data = await response.json();
+          const map: Record<string, { status: string; available_slots: number }> = {};
+          data.forEach((item: any) => {
+            map[item.date] = { status: item.status, available_slots: item.available_slots };
+          });
+          setAvailability(map);
+        } else {
+          throw new Error('API response error');
+        }
+      } catch (err) {
+        console.warn('Backend API availability not found, utilizing local deterministic simulation.');
+        // Fallback simulation for 60 days
+        const mockMap: Record<string, { status: string; available_slots: number }> = {};
+        for (let i = 0; i < 60; i++) {
+          const d = new Date();
+          d.setDate(d.getDate() + i);
+          const dateStr = d.toISOString().split('T')[0];
+          
+          let hash = 0;
+          for (let j = 0; j < dateStr.length; j++) {
+            hash = dateStr.charCodeAt(j) + ((hash << 5) - hash);
+          }
+          // Deterministic booked date: ~14% chance of being fully booked
+          const isBooked = Math.abs(hash % 7) === 0;
+          mockMap[dateStr] = {
+            status: isBooked ? 'booked' : 'available',
+            available_slots: isBooked ? 0 : Math.abs(hash % 5) + 1
+          };
+        }
+        setAvailability(mockMap);
+      }
+    };
+    fetchAvailability();
+  }, []);
 
   // Helper to format HTML date string (YYYY-MM-DD) to MM/DD/YYYY
   const formatDateToMMDDYYYY = (dateStr: string) => {
@@ -650,15 +692,16 @@ function BookingModal({ onClose }: BookingModalProps) {
   const getBookedSlotsForDate = (dateStr: string): string[] => {
     if (!dateStr) return [];
     
+    // Check if the overall date status is booked from our availability dataset
+    const dateAvail = availability[dateStr];
+    if (dateAvail && (dateAvail.status === 'booked' || dateAvail.available_slots === 0)) {
+      return [...timeSlots]; // All slots booked
+    }
+    
     // Simple deterministic hash based on date string
     let hash = 0;
     for (let i = 0; i < dateStr.length; i++) {
       hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    
-    const isFullyBooked = Math.abs(hash % 7) === 0; // ~14% chance of being fully booked
-    if (isFullyBooked) {
-      return [...timeSlots]; // Book all slots
     }
     
     const booked: string[] = [];
@@ -727,6 +770,94 @@ function BookingModal({ onClose }: BookingModalProps) {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Render Calendar Grid layout
+  const renderCalendar = () => {
+    const year = currentMonth.getFullYear();
+    const month = currentMonth.getMonth();
+    
+    const firstDay = new Date(year, month, 1).getDay();
+    const totalDays = new Date(year, month + 1, 0).getDate();
+    
+    const days = [];
+    // Padding
+    for (let i = 0; i < firstDay; i++) {
+      days.push(<div key={`empty-${i}`} className="h-8 w-8" />);
+    }
+    
+    const monthNames = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    
+    const todayMidnight = new Date();
+    todayMidnight.setHours(0,0,0,0);
+
+    for (let day = 1; day <= totalDays; day++) {
+      const d = new Date(year, month, day);
+      const yearStr = d.getFullYear();
+      const monthStr = String(d.getMonth() + 1).padStart(2, '0');
+      const dayStr = String(d.getDate()).padStart(2, '0');
+      const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
+      
+      const isPast = d < todayMidnight;
+      const dayAvail = availability[dateStr];
+      const isBooked = dayAvail ? (dayAvail.status === 'booked' || dayAvail.available_slots === 0) : false;
+      const isSelected = date === dateStr;
+      
+      let btnClass = "h-8 w-8 rounded-full text-xs flex items-center justify-center transition-all ";
+      let isDisabled = isPast || isBooked;
+      
+      if (isSelected) {
+        btnClass += "bg-[#6b8e7a] text-white font-semibold shadow-sm";
+      } else if (isDisabled) {
+        btnClass += "text-gray-300 line-through cursor-not-allowed bg-gray-50";
+      } else {
+        btnClass += "text-gray-700 hover:bg-rose-50 hover:text-[#6b8e7a] font-medium";
+      }
+      
+      days.push(
+        <button
+          key={`day-${day}`}
+          type="button"
+          disabled={isDisabled}
+          onClick={() => handleDateChange(dateStr)}
+          className={btnClass}
+          title={isBooked ? "Fully Booked" : ""}
+        >
+          {day}
+        </button>
+      );
+    }
+    
+    return (
+      <div className="border border-gray-100 rounded-xl p-3 bg-white shadow-sm mt-1">
+        <div className="flex justify-between items-center mb-2">
+          <button 
+            type="button" 
+            onClick={() => setCurrentMonth(new Date(year, month - 1, 1))}
+            className="p-1 rounded hover:bg-gray-100 text-gray-600 font-bold"
+          >
+            &larr;
+          </button>
+          <span className="text-xs font-semibold text-gray-700">{monthNames[month]} {year}</span>
+          <button 
+            type="button" 
+            onClick={() => setCurrentMonth(new Date(year, month + 1, 1))}
+            className="p-1 rounded hover:bg-gray-100 text-gray-600 font-bold"
+          >
+            &rarr;
+          </button>
+        </div>
+        <div className="grid grid-cols-7 gap-1 text-center text-[9px] font-semibold text-gray-400 mb-1">
+          <div>Su</div><div>Mo</div><div>Tu</div><div>We</div><div>Th</div><div>Fr</div><div>Sa</div>
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {days}
+        </div>
+      </div>
+    );
   };
 
   return (
@@ -806,15 +937,8 @@ function BookingModal({ onClose }: BookingModalProps) {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Preferred Date</label>
-                  <input 
-                    required 
-                    type="date" 
-                    min={today}
-                    value={date}
-                    onChange={(e) => handleDateChange(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
-                  />
+                  <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Select Date</label>
+                  {renderCalendar()}
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Available Times</label>
