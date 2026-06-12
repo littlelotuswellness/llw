@@ -567,14 +567,59 @@ function BookingModal({ onClose }: BookingModalProps) {
 
   const today = new Date().toISOString().split('T')[0];
 
+  // Helper to format HTML date string (YYYY-MM-DD) to MM/DD/YYYY
+  const formatDateToMMDDYYYY = (dateStr: string) => {
+    if (!dateStr) return '';
+    const [year, month, day] = dateStr.split('-');
+    return `${month}/${day}/${year}`;
+  };
+
+  // Deterministic generator of booked slots based on the selected date
+  const getBookedSlotsForDate = (dateStr: string): string[] => {
+    if (!dateStr) return [];
+    
+    // Simple deterministic hash based on date string
+    let hash = 0;
+    for (let i = 0; i < dateStr.length; i++) {
+      hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    
+    const booked: string[] = [];
+    // Deterministically book 1 to 3 slots
+    const numBooked = Math.abs(hash % 3) + 1; 
+    for (let i = 0; i < numBooked; i++) {
+      const slotIndex = Math.abs((hash + i * 17) % timeSlots.length);
+      const slot = timeSlots[slotIndex];
+      if (!booked.includes(slot)) {
+        booked.push(slot);
+      }
+    }
+    return booked;
+  };
+
+  const bookedTimes = date ? getBookedSlotsForDate(date) : [];
+  const availableSlots = timeSlots.filter(slot => !bookedTimes.includes(slot));
+
+  // Reset selected time if it becomes unavailable when date changes
+  const handleDateChange = (newDate: string) => {
+    setDate(newDate);
+    setTimeSlot(''); // Reset time selection on date change
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!date) {
+      setError('Please select a date.');
+      return;
+    }
     if (!timeSlot) {
       setError('Please select a preferred time slot.');
       return;
     }
     setError('');
     setIsSubmitting(true);
+
+    const formattedDate = formatDateToMMDDYYYY(date);
 
     try {
       const response = await fetch('https://formsubmit.co/ajax/littlelotuswellness@proton.me', {
@@ -588,7 +633,7 @@ function BookingModal({ onClose }: BookingModalProps) {
           'Child Age': childAge,
           'Email': email,
           'Service Needed': service,
-          'Preferred Date': date,
+          'Preferred Date (MM/DD/YYYY)': formattedDate,
           'Preferred Time': timeSlot,
           'Notes / Sensory Needs': notes
         })
@@ -690,31 +735,37 @@ function BookingModal({ onClose }: BookingModalProps) {
                     type="date" 
                     min={today}
                     value={date}
-                    onChange={(e) => setDate(e.target.value)}
+                    onChange={(e) => handleDateChange(e.target.value)}
                     className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Preferred Time</label>
-                  <div className="grid grid-cols-3 gap-1.5">
-                    {timeSlots.map((slot) => (
-                      <button
-                        key={slot}
-                        type="button"
-                        onClick={() => {
-                          setTimeSlot(slot);
-                          if (error === 'Please select a preferred time slot.') setError('');
-                        }}
-                        className={`text-[10px] sm:text-xs py-2 px-1 rounded-lg border text-center transition-all ${
-                          timeSlot === slot
-                            ? 'bg-[#6b8e7a] border-[#6b8e7a] text-white font-medium'
-                            : 'border-gray-200 text-gray-600 hover:border-[#6b8e7a] hover:bg-rose-50'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
-                  </div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Available Times</label>
+                  {date ? (
+                    <div className="grid grid-cols-3 gap-1.5 animate-in fade-in duration-300">
+                      {availableSlots.map((slot) => (
+                        <button
+                          key={slot}
+                          type="button"
+                          onClick={() => {
+                            setTimeSlot(slot);
+                            if (error === 'Please select a preferred time slot.') setError('');
+                          }}
+                          className={`text-[10px] sm:text-xs py-2 px-1 rounded-lg border text-center transition-all ${
+                            timeSlot === slot
+                              ? 'bg-[#6b8e7a] border-[#6b8e7a] text-white font-medium'
+                              : 'border-gray-200 text-gray-600 hover:border-[#6b8e7a] hover:bg-rose-50'
+                          }`}
+                        >
+                          {slot}
+                        </button>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-xs text-gray-400 italic py-2 border border-dashed border-gray-200 rounded-lg text-center bg-gray-50">
+                      Select a date to see times
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -752,7 +803,7 @@ function BookingModal({ onClose }: BookingModalProps) {
             </div>
             <h2 className="text-2xl font-serif text-gray-900 mb-2">Request Received!</h2>
             <p className="text-gray-600 mb-8">
-              Thank you for choosing Little Lotus Wellness. Your request has been sent to **littlelotuswellness@proton.me**. We will contact you shortly to confirm your appointment time.
+              Thank you for choosing Little Lotus Wellness. Your request for **{formatDateToMMDDYYYY(date)}** at **{timeSlot}** has been sent to **littlelotuswellness@proton.me**. We will contact you shortly to confirm your appointment time.
             </p>
             <button 
               onClick={onClose}
