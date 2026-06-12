@@ -35,13 +35,11 @@ export default function App() {
           <div className="flex justify-between items-center h-20">
             {/* Logo */}
             <div 
-              className="flex items-center gap-2 cursor-pointer" 
+              className="flex items-center gap-3 cursor-pointer" 
               onClick={() => navigateTo('home')}
             >
-              <div className="bg-rose-100 p-2 rounded-full text-rose-500">
-                <Flower2 size={32} strokeWidth={1.5} />
-              </div>
-              <div className="flex flex-col">
+              <img src="/logo.jpg" alt="Little Lotus Wellness Logo" className="h-16 w-16 object-contain rounded-full border border-rose-100 shadow-sm" />
+              <div className="flex flex-col hidden sm:flex">
                 <span className="text-2xl font-serif text-[#6b8e7a] leading-none tracking-wide">Little Lotus</span>
                 <span className="text-xs uppercase tracking-widest text-rose-400 mt-1">Wellness</span>
               </div>
@@ -103,8 +101,8 @@ export default function App() {
       <footer className="bg-[#6b8e7a] text-emerald-50 py-12 border-t-4 border-rose-300">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Flower2 size={28} className="text-rose-200" />
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/logo.jpg" alt="Little Lotus Wellness Logo" className="h-14 w-14 object-contain rounded-full border border-rose-200/50 bg-white p-0.5" />
               <span className="text-2xl font-serif text-white">Little Lotus</span>
             </div>
             <p className="text-emerald-100 text-sm mb-6 max-w-xs">
