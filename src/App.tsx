@@ -39,26 +39,18 @@ export default function App() {
     setNewsletterSuccess(false);
 
     try {
-      const response = await fetch('https://formsubmit.co/ajax/littlelotuswellness@proton.me', {
+      const formData = new FormData();
+      formData.append('EMAIL', newsletterEmail);
+      formData.append('locale', 'en');
+
+      await fetch('https://eea1bd3f.sibforms.com/serve/MUIFAHszwd8q8mqO-a1ApY9K_9l6F8PLgNb_nTFLUhixvK2zUXo88R9-fe6Ok8NVlDHOsQb5S7577BfiW9ssIlaYTsAx7EFsdaSxmOejIiCTwTPhNkU6MKvkvWiKIMC7vVCX4U476GLTuYNHsQ3YhBonoS_CkHD46aoOPchkQJ3Sj96FDhxxXMEU_M306pVypX7QcClnRgtu67T_7Q==', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-          'email': newsletterEmail,
-          '_subject': 'Welcome to Little Lotus Wellness! 🎉',
-          '_autoresponse': 'Hi there, thank you for subscribing to our newsletter! Stay tuned for the latest updates and exclusive offers.',
-          'Message': 'New subscriber registered for the newsletter.'
-        })
+        body: formData,
+        mode: 'no-cors'
       });
 
-      if (response.ok) {
-        setNewsletterSuccess(true);
-        setNewsletterEmail('');
-      } else {
-        throw new Error('Subscription failed');
-      }
+      setNewsletterSuccess(true);
+      setNewsletterEmail('');
     } catch (err) {
       console.error(err);
       setNewsletterError('Something went wrong. Please try again.');
