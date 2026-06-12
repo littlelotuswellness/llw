@@ -717,8 +717,38 @@ function BookingModal({ onClose }: BookingModalProps) {
     return booked;
   };
 
+  // Check if a time slot has already passed for today
+  const isTimeSlotInPast = (slot: string, dateStr: string): boolean => {
+    const todayStr = new Date().toISOString().split('T')[0];
+    if (dateStr !== todayStr) return false; // Only check for today
+    
+    const now = new Date();
+    const currentHours = now.getHours();
+    const currentMinutes = now.getMinutes();
+    
+    const [time, modifier] = slot.split(' ');
+    const [hoursStr, minutesStr] = time.split(':');
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    
+    if (modifier === 'PM' && hours < 12) {
+      hours += 12;
+    }
+    if (modifier === 'AM' && hours === 12) {
+      hours = 0;
+    }
+    
+    if (hours < currentHours) return true;
+    if (hours === currentHours && minutes <= currentMinutes) return true;
+    return false;
+  };
+
   const bookedTimes = date ? getBookedSlotsForDate(date) : [];
-  const availableSlots = timeSlots.filter(slot => !bookedTimes.includes(slot));
+  const availableSlots = timeSlots.filter(slot => {
+    const isBooked = bookedTimes.includes(slot);
+    const isPastTime = isTimeSlotInPast(slot, date);
+    return !isBooked && !isPastTime;
+  });
 
   // Reset selected time if it becomes unavailable when date changes
   const handleDateChange = (newDate: string) => {
