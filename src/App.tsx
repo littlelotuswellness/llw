@@ -745,6 +745,7 @@ function BookingModal({ onClose }: BookingModalProps) {
 
   const bookedTimes = date ? getBookedSlotsForDate(date) : [];
   const availableSlots = timeSlots.filter(slot => {
+    if (slot === '12:00 PM') return false; // Always block out 12:00 PM (lunch hour)
     const isBooked = bookedTimes.includes(slot);
     const isPastTime = isTimeSlotInPast(slot, date);
     return !isBooked && !isPastTime;
