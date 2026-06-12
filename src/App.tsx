@@ -545,10 +545,66 @@ interface BookingModalProps {
 
 function BookingModal({ onClose }: BookingModalProps) {
   const [step, setStep] = useState(1);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const [parentName, setParentName] = useState('');
+  const [childAge, setChildAge] = useState('');
+  const [email, setEmail] = useState('');
+  const [service, setService] = useState('Pediatric Massage (Standard 60 min)');
+  const [date, setDate] = useState('');
+  const [timeSlot, setTimeSlot] = useState('');
+  const [notes, setNotes] = useState('');
+
+  const timeSlots = [
+    '09:00 AM',
+    '10:30 AM',
+    '12:00 PM',
+    '01:30 PM',
+    '03:00 PM',
+    '04:30 PM'
+  ];
+
+  const today = new Date().toISOString().split('T')[0];
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setStep(2); // Show success message
+    if (!timeSlot) {
+      setError('Please select a preferred time slot.');
+      return;
+    }
+    setError('');
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/littlelotuswellness@proton.me', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          'Parent Name': parentName,
+          'Child Age': childAge,
+          'Email': email,
+          'Service Needed': service,
+          'Preferred Date': date,
+          'Preferred Time': timeSlot,
+          'Notes / Sensory Needs': notes
+        })
+      });
+
+      if (response.ok) {
+        setStep(2);
+      } else {
+        throw new Error('Form submission failed.');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Something went wrong. Please try again or contact us directly.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -562,30 +618,60 @@ function BookingModal({ onClose }: BookingModalProps) {
         </button>
 
         {step === 1 ? (
-          <div className="p-8">
+          <div className="p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-serif text-[#6b8e7a] mb-2">Request an Appointment</h2>
             <p className="text-gray-500 text-sm mb-6">Please fill out this brief pre-appointment intake form so we can individualize your child's session.</p>
             
+            {error && (
+              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
+                ⚠️ {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Parent's Name</label>
-                  <input required type="text" className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none" />
+                  <input 
+                    required 
+                    type="text" 
+                    value={parentName}
+                    onChange={(e) => setParentName(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1">Child's Age</label>
-                  <input required type="number" min="0" max="18" className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none" />
+                  <input 
+                    required 
+                    type="number" 
+                    min="0" 
+                    max="18" 
+                    value={childAge}
+                    onChange={(e) => setChildAge(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
+                  />
                 </div>
               </div>
               
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Contact Email</label>
-                <input required type="email" className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none" />
+                <input 
+                  required 
+                  type="email" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
+                />
               </div>
 
               <div>
                 <label className="block text-xs font-medium text-gray-700 mb-1">Service Needed</label>
-                <select className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white">
+                <select 
+                  value={service}
+                  onChange={(e) => setService(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800"
+                >
                   <option>Pediatric Massage (Standard 60 min)</option>
                   <option>Athletic Recovery & Performance</option>
                   <option>Calm & Centered (Stress Relief)</option>
@@ -594,13 +680,66 @@ function BookingModal({ onClose }: BookingModalProps) {
                 </select>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Special Wellness Needs or Sensory Notes</label>
-                <textarea rows={3} className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none resize-none"></textarea>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Preferred Date</label>
+                  <input 
+                    required 
+                    type="date" 
+                    min={today}
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Preferred Time</label>
+                  <div className="grid grid-cols-3 gap-1.5">
+                    {timeSlots.map((slot) => (
+                      <button
+                        key={slot}
+                        type="button"
+                        onClick={() => {
+                          setTimeSlot(slot);
+                          if (error === 'Please select a preferred time slot.') setError('');
+                        }}
+                        className={`text-[10px] sm:text-xs py-2 px-1 rounded-lg border text-center transition-all ${
+                          timeSlot === slot
+                            ? 'bg-[#6b8e7a] border-[#6b8e7a] text-white font-medium'
+                            : 'border-gray-200 text-gray-600 hover:border-[#6b8e7a] hover:bg-rose-50'
+                        }`}
+                      >
+                        {slot}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
 
-              <button type="submit" className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] text-white font-medium py-3 rounded-xl transition-colors mt-2">
-                Submit Request
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Special Wellness Needs or Sensory Notes</label>
+                <textarea 
+                  rows={2} 
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none resize-none bg-white text-gray-800"
+                ></textarea>
+              </div>
+
+              <button 
+                type="submit" 
+                disabled={isSubmitting}
+                className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] disabled:bg-gray-400 text-white font-medium py-3 rounded-xl transition-colors mt-2 flex items-center justify-center gap-2"
+              >
+                {isSubmitting ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Submitting...
+                  </>
+                ) : 'Submit Request'}
               </button>
             </form>
           </div>
@@ -611,7 +750,7 @@ function BookingModal({ onClose }: BookingModalProps) {
             </div>
             <h2 className="text-2xl font-serif text-gray-900 mb-2">Request Received!</h2>
             <p className="text-gray-600 mb-8">
-              Thank you for choosing Little Lotus Wellness. We have received your intake form and will contact you shortly to confirm your appointment time.
+              Thank you for choosing Little Lotus Wellness. Your request has been sent to **littlelotuswellness@proton.me**. We will contact you shortly to confirm your appointment time.
             </p>
             <button 
               onClick={onClose}
