@@ -656,9 +656,14 @@ function BookingModal({ onClose }: BookingModalProps) {
       hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
     }
     
+    const isFullyBooked = Math.abs(hash % 7) === 0; // ~14% chance of being fully booked
+    if (isFullyBooked) {
+      return [...timeSlots]; // Book all slots
+    }
+    
     const booked: string[] = [];
-    // Deterministically book 1 to 3 slots
-    const numBooked = Math.abs(hash % 3) + 1; 
+    // Deterministically book 1 to 5 slots
+    const numBooked = Math.abs(hash % 5) + 1; 
     for (let i = 0; i < numBooked; i++) {
       const slotIndex = Math.abs((hash + i * 17) % timeSlots.length);
       const slot = timeSlots[slotIndex];
@@ -814,25 +819,31 @@ function BookingModal({ onClose }: BookingModalProps) {
                 <div>
                   <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Available Times</label>
                   {date ? (
-                    <div className="grid grid-cols-3 gap-1.5 animate-in fade-in duration-300">
-                      {availableSlots.map((slot) => (
-                        <button
-                          key={slot}
-                          type="button"
-                          onClick={() => {
-                            setTimeSlot(slot);
-                            if (error === 'Please select a preferred time slot.') setError('');
-                          }}
-                          className={`text-[10px] sm:text-xs py-2 px-1 rounded-lg border text-center transition-all ${
-                            timeSlot === slot
-                              ? 'bg-[#6b8e7a] border-[#6b8e7a] text-white font-medium'
-                              : 'border-gray-200 text-gray-600 hover:border-[#6b8e7a] hover:bg-rose-50'
-                          }`}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
+                    availableSlots.length > 0 ? (
+                      <div className="grid grid-cols-3 gap-1.5 animate-in fade-in duration-300">
+                        {availableSlots.map((slot) => (
+                          <button
+                            key={slot}
+                            type="button"
+                            onClick={() => {
+                              setTimeSlot(slot);
+                              if (error === 'Please select a preferred time slot.') setError('');
+                            }}
+                            className={`text-[10px] sm:text-xs py-2 px-1 rounded-lg border text-center transition-all ${
+                              timeSlot === slot
+                                ? 'bg-[#6b8e7a] border-[#6b8e7a] text-white font-medium'
+                                : 'border-gray-200 text-gray-600 hover:border-[#6b8e7a] hover:bg-rose-50'
+                            }`}
+                          >
+                            {slot}
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-lg text-xs text-center font-medium animate-in slide-in-from-top-2 duration-300">
+                        ⚠️ Fully booked. Please select another date.
+                      </div>
+                    )
                   ) : (
                     <div className="text-xs text-gray-400 italic py-2 border border-dashed border-gray-200 rounded-lg text-center bg-gray-50">
                       Select a date to see times
