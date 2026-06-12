@@ -608,15 +608,17 @@ function BookingModal({ onClose }: BookingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative">
-        <button 
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 bg-gray-100 rounded-full p-2 transition-colors z-10"
-        >
-          <X size={20} />
-        </button>
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/45 backdrop-blur-sm animate-in fade-in duration-200">
+      {/* Window Close Button */}
+      <button 
+        onClick={onClose}
+        className="fixed top-6 right-6 text-white hover:text-rose-200 bg-black/20 hover:bg-black/40 backdrop-blur-md rounded-full p-3 transition-colors z-[110] shadow-md border border-white/10"
+        aria-label="Close window"
+      >
+        <X size={24} />
+      </button>
 
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative">
         {step === 1 ? (
           <div className="p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-serif text-[#6b8e7a] mb-2">Request an Appointment</h2>
