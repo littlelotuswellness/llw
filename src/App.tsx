@@ -78,9 +78,8 @@ export default function App() {
               onClick={() => navigateTo('home')}
             >
               <img src="/logo.jpg" alt="Little Lotus Wellness Logo" className="h-16 w-16 object-contain rounded-full border border-rose-100 shadow-sm" />
-              <div className="flex flex-col hidden sm:flex">
-                <span className="text-2xl font-serif text-[#6b8e7a] leading-none tracking-wide">Little Lotus</span>
-                <span className="text-xs uppercase tracking-widest text-rose-400 mt-1">Wellness</span>
+              <div className="flex flex-col">
+                <span className="text-lg sm:text-2xl font-serif text-[#6b8e7a] leading-none tracking-wide">Little Lotus Wellness</span>
               </div>
             </div>
 
