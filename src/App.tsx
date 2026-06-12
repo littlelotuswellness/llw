@@ -20,11 +20,51 @@ export default function App() {
   const [currentView, setCurrentView] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
+  const [newsletterSuccess, setNewsletterSuccess] = useState(false);
+  const [newsletterError, setNewsletterError] = useState('');
 
   const navigateTo = (view: string) => {
     setCurrentView(view);
     setIsMobileMenuOpen(false);
     window.scrollTo(0, 0);
+  };
+
+  const handleNewsletterSubscribe = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    setNewsletterSubmitting(true);
+    setNewsletterError('');
+    setNewsletterSuccess(false);
+
+    try {
+      const response = await fetch('https://formsubmit.co/ajax/littlelotuswellness@proton.me', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({
+          'email': newsletterEmail,
+          '_subject': 'Welcome to Little Lotus Wellness Newsletter!',
+          '_autoresponse': 'Hello lovely customer,\nWelcome to Little Lotus Wellness Newsletter.\n\nSincerely,\nFounder',
+          'Message': 'New subscriber registered for the newsletter.'
+        })
+      });
+
+      if (response.ok) {
+        setNewsletterSuccess(true);
+        setNewsletterEmail('');
+      } else {
+        throw new Error('Subscription failed');
+      }
+    } catch (err) {
+      console.error(err);
+      setNewsletterError('Something went wrong. Please try again.');
+    } finally {
+      setNewsletterSubmitting(false);
+    }
   };
 
   return (
@@ -139,16 +179,41 @@ export default function App() {
           <div>
             <h3 className="text-lg font-medium text-white mb-4">Join Our Newsletter</h3>
             <p className="text-sm text-emerald-100 mb-4">Get holistic health tips and exclusive updates.</p>
-            <form className="flex flex-col gap-2" onSubmit={(e) => e.preventDefault()}>
-              <input 
-                type="email" 
-                placeholder="Email Address" 
-                className="px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-300"
-              />
-              <button className="bg-rose-300 hover:bg-rose-400 text-[#5a7a68] font-medium py-2 rounded-lg transition-colors">
-                Subscribe
-              </button>
-            </form>
+            {newsletterSuccess ? (
+              <div className="p-3 bg-emerald-800/50 text-emerald-100 rounded-lg text-sm border border-emerald-700/50 animate-in fade-in duration-300">
+                🌸 Thank you for subscribing! A welcome letter has been sent to your email.
+              </div>
+            ) : (
+              <form className="flex flex-col gap-2" onSubmit={handleNewsletterSubscribe}>
+                <input 
+                  required
+                  type="email" 
+                  name="email"
+                  placeholder="Email Address" 
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
+                  className="px-4 py-2 rounded-lg text-gray-800 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                />
+                {newsletterError && (
+                  <p className="text-rose-200 text-xs mt-1">⚠️ {newsletterError}</p>
+                )}
+                <button 
+                  type="submit"
+                  disabled={newsletterSubmitting}
+                  className="bg-rose-300 hover:bg-rose-400 disabled:bg-emerald-800/40 text-[#5a7a68] disabled:text-emerald-300 font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
+                >
+                  {newsletterSubmitting ? (
+                    <>
+                      <svg className="animate-spin h-4 w-4 text-[#5a7a68]" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Subscribing...
+                    </>
+                  ) : 'Subscribe'}
+                </button>
+              </form>
+            )}
           </div>
         </div>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 pt-8 border-t border-emerald-700/50 text-center text-xs text-emerald-200">
