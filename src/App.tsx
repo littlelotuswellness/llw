@@ -61,6 +61,13 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#faf9f7] font-sans text-gray-800 flex flex-col">
+      {/* Work in Progress Banner */}
+      <div className="bg-amber-100 border-b border-amber-200 py-2.5 text-center px-4">
+        <p className="text-xs sm:text-sm text-amber-800 font-medium tracking-wide">
+          ⚠️ This website is NOT IN USE - WORKING IN PROCESS. Thank you for your patience!
+        </p>
+      </div>
+
       {/* Navigation */}
       <nav className="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm border-b border-rose-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
