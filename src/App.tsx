@@ -12,8 +12,27 @@ import {
   X, 
   ChevronRight,
   ShieldCheck,
-  Flower2
+  Flower2,
+  ShoppingCart,
+  Plus,
+  Minus,
+  Trash2
 } from 'lucide-react';
+
+interface Product {
+  id: number;
+  name: string;
+  category: string;
+  price: string;
+  desc: string;
+  bgColor: string;
+  icon: React.ReactNode;
+}
+
+interface CartItem {
+  product: Product;
+  quantity: number;
+}
 
 export default function App() {
   const [currentView, setCurrentView] = useState('home');
@@ -23,6 +42,60 @@ export default function App() {
   const [newsletterSubmitting, setNewsletterSubmitting] = useState(false);
   const [newsletterSuccess, setNewsletterSuccess] = useState(false);
   const [newsletterError, setNewsletterError] = useState('');
+
+  // Cart States
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  
+  // Checkout Form State
+  const [checkoutParentName, setCheckoutParentName] = useState('');
+  const [checkoutEmail, setCheckoutEmail] = useState('');
+  const [checkoutPhone, setCheckoutPhone] = useState('');
+  const [checkoutAddress, setCheckoutAddress] = useState('');
+  const [checkoutNotes, setCheckoutNotes] = useState('');
+  const [isCheckoutSubmitting, setIsCheckoutSubmitting] = useState(false);
+  const [checkoutSuccess, setCheckoutSuccess] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+
+  const addToCart = (product: Product) => {
+    setCart(prevCart => {
+      const existing = prevCart.find(item => item.product.id === product.id);
+      if (existing) {
+        return prevCart.map(item =>
+          item.product.id === product.id
+            ? { ...item, quantity: item.quantity + 1 }
+            : item
+        );
+      }
+      return [...prevCart, { product, quantity: 1 }];
+    });
+    setIsCartOpen(true);
+  };
+
+  const updateQuantity = (productId: number, amount: number) => {
+    setCart(prevCart =>
+      prevCart
+        .map(item => {
+          if (item.product.id === productId) {
+            const newQty = item.quantity + amount;
+            return { ...item, quantity: newQty };
+          }
+          return item;
+        })
+        .filter(item => item.quantity > 0)
+    );
+  };
+
+  const removeFromCart = (productId: number) => {
+    setCart(prevCart => prevCart.filter(item => item.product.id !== productId));
+  };
+
+  const totalCartItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const cartSubtotal = cart.reduce((sum, item) => {
+    const numericPrice = parseFloat(item.product.price.replace('$', ''));
+    return sum + numericPrice * item.quantity;
+  }, 0);
 
   const navigateTo = (view: string) => {
     setCurrentView(view);
@@ -90,6 +163,18 @@ export default function App() {
               <button onClick={() => navigateTo('shop')} className={`text-sm font-medium transition-colors ${currentView === 'shop' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>Shop</button>
               <button onClick={() => navigateTo('faq')} className={`text-sm font-medium transition-colors ${currentView === 'faq' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>FAQ</button>
               <button 
+                onClick={() => setIsCartOpen(true)}
+                className="relative text-gray-600 hover:text-[#6b8e7a] p-2 transition-colors flex items-center"
+                aria-label="View shopping cart"
+              >
+                <ShoppingCart size={22} />
+                {totalCartItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full text-[10px] font-bold w-5 h-5 flex items-center justify-center border-2 border-white animate-bounce">
+                    {totalCartItems}
+                  </span>
+                )}
+              </button>
+              <button 
                 onClick={() => setIsBookingModalOpen(true)}
                 className="bg-[#6b8e7a] hover:bg-[#5a7a68] text-white px-6 py-2.5 rounded-full text-sm font-medium transition-all shadow-sm hover:shadow flex items-center gap-2"
               >
@@ -98,8 +183,20 @@ export default function App() {
               </button>
             </div>
 
-            {/* Mobile Menu Toggle */}
-            <div className="md:hidden flex items-center">
+            {/* Mobile Menu Toggle and Cart */}
+            <div className="md:hidden flex items-center gap-4">
+              <button 
+                onClick={() => setIsCartOpen(true)}
+                className="relative text-gray-600 hover:text-[#6b8e7a] p-1.5 transition-colors"
+                aria-label="View shopping cart"
+              >
+                <ShoppingCart size={24} />
+                {totalCartItems > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-rose-500 text-white rounded-full text-[10px] font-bold w-4 h-4 flex items-center justify-center border border-white">
+                    {totalCartItems}
+                  </span>
+                )}
+              </button>
               <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-gray-600 hover:text-[#6b8e7a]">
                 {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
               </button>
@@ -114,6 +211,13 @@ export default function App() {
             <button onClick={() => navigateTo('services')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">Services</button>
             <button onClick={() => navigateTo('shop')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">Shop</button>
             <button onClick={() => navigateTo('faq')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">FAQ</button>
+            <button 
+              onClick={() => { setIsCartOpen(true); setIsMobileMenuOpen(false); }}
+              className="w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg flex items-center justify-between"
+            >
+              <span>Shopping Cart</span>
+              <span className="bg-rose-100 text-rose-600 px-2 py-0.5 rounded-full text-xs font-semibold">{totalCartItems} items</span>
+            </button>
             <div className="pt-2">
               <button 
                 onClick={() => {setIsBookingModalOpen(true); setIsMobileMenuOpen(false);}}
@@ -131,7 +235,7 @@ export default function App() {
       <main className="flex-grow">
         {currentView === 'home' && <HomeView onBook={() => setIsBookingModalOpen(true)} onNavigate={navigateTo} />}
         {currentView === 'services' && <ServicesView onBook={() => setIsBookingModalOpen(true)} />}
-        {currentView === 'shop' && <ShopView />}
+        {currentView === 'shop' && <ShopView onAddToCart={addToCart} />}
         {currentView === 'faq' && <FaqView />}
       </main>
 
@@ -221,6 +325,293 @@ export default function App() {
 
       {/* Booking Modal */}
       {isBookingModalOpen && <BookingModal onClose={() => setIsBookingModalOpen(false)} />}
+
+      {/* Cart Drawer */}
+      {isCartOpen && (
+        <div className="fixed inset-0 z-[100] overflow-hidden animate-in fade-in duration-200" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
+          <div className="absolute inset-0 overflow-hidden">
+            {/* Background overlay */}
+            <div 
+              className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+              onClick={() => setIsCartOpen(false)}
+            />
+
+            <div className="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10">
+              <div className="pointer-events-auto w-screen max-w-md transform transition-all duration-300 ease-in-out bg-white shadow-2xl flex flex-col h-full border-l border-rose-100 animate-in slide-in-from-right duration-300">
+                {/* Header */}
+                <div className="px-6 py-6 bg-rose-50/50 border-b border-rose-100 flex items-center justify-between">
+                  <h2 className="text-xl font-serif text-gray-900 flex items-center gap-2">
+                    <ShoppingCart size={22} className="text-[#6b8e7a]" />
+                    Shopping Cart
+                  </h2>
+                  <button 
+                    onClick={() => setIsCartOpen(false)}
+                    className="rounded-full p-1.5 text-gray-400 hover:text-gray-500 hover:bg-rose-100 transition-colors"
+                  >
+                    <X size={20} />
+                  </button>
+                </div>
+
+                {/* Items list */}
+                <div className="flex-1 overflow-y-auto px-6 py-4 space-y-4">
+                  {cart.length === 0 ? (
+                    <div className="text-center py-16">
+                      <ShoppingBag size={48} className="mx-auto text-gray-300 mb-4" />
+                      <p className="text-gray-500 font-medium">Your cart is empty</p>
+                      <button 
+                        onClick={() => { setIsCartOpen(false); navigateTo('shop'); }}
+                        className="mt-4 text-[#6b8e7a] hover:underline text-sm font-semibold"
+                      >
+                        Browse our Shop
+                      </button>
+                    </div>
+                  ) : (
+                    cart.map(item => (
+                      <div key={item.product.id} className="flex gap-4 p-4 border border-rose-100 rounded-2xl bg-[#faf9f7] items-center">
+                        <div className={`w-12 h-12 rounded-xl flex items-center justify-center shrink-0 ${item.product.bgColor}`}>
+                          {item.product.icon}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className="text-sm font-medium text-gray-900 truncate">{item.product.name}</h4>
+                          <p className="text-xs text-[#6b8e7a] font-semibold mt-0.5">{item.product.price}</p>
+                        </div>
+                        <div className="flex items-center gap-2 border border-gray-200 rounded-full bg-white px-2 py-1">
+                          <button 
+                            onClick={() => updateQuantity(item.product.id, -1)}
+                            className="text-gray-500 hover:text-rose-500 p-0.5"
+                          >
+                            <Minus size={14} />
+                          </button>
+                          <span className="text-xs font-semibold text-gray-700 w-4 text-center">{item.quantity}</span>
+                          <button 
+                            onClick={() => updateQuantity(item.product.id, 1)}
+                            className="text-gray-500 hover:text-[#6b8e7a] p-0.5"
+                          >
+                            <Plus size={14} />
+                          </button>
+                        </div>
+                        <button 
+                          onClick={() => removeFromCart(item.product.id)}
+                          className="text-gray-400 hover:text-rose-500 transition-colors p-1"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* Footer and summary */}
+                {cart.length > 0 && (
+                  <div className="border-t border-rose-100 px-6 py-6 bg-rose-50/20 space-y-4">
+                    <div className="flex justify-between text-base font-medium text-gray-900">
+                      <span>Subtotal</span>
+                      <span className="font-bold">${cartSubtotal.toFixed(2)}</span>
+                    </div>
+                    <p className="text-xs text-gray-500">Shipping and taxes calculated at checkout.</p>
+                    <button
+                      onClick={() => {
+                        setIsCartOpen(false);
+                        setIsCheckoutOpen(true);
+                      }}
+                      className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] text-white py-3.5 rounded-full font-medium text-center shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                    >
+                      Proceed to Checkout
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Checkout Modal */}
+      {isCheckoutOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => {
+              if (!isCheckoutSubmitting) {
+                setIsCheckoutOpen(false);
+                setCheckoutSuccess(false);
+              }
+            }}
+          />
+
+          {/* Modal box */}
+          <div className="relative bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-rose-100 z-10 animate-in zoom-in-95 duration-200">
+            {/* Header */}
+            <div className="px-6 py-5 bg-rose-50/50 border-b border-rose-100 flex items-center justify-between">
+              <h2 className="text-xl font-serif text-gray-900">Secure Order Checkout</h2>
+              <button 
+                onClick={() => {
+                  setIsCheckoutOpen(false);
+                  setCheckoutSuccess(false);
+                }}
+                disabled={isCheckoutSubmitting}
+                className="rounded-full p-1.5 text-gray-400 hover:text-gray-500 hover:bg-rose-100 transition-colors disabled:opacity-50"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {checkoutSuccess ? (
+              <div className="p-8 text-center animate-in fade-in duration-300">
+                <div className="mx-auto w-16 h-16 bg-emerald-100 text-[#6b8e7a] rounded-full flex items-center justify-center mb-6">
+                  <Flower2 size={36} />
+                </div>
+                <h3 className="text-2xl font-serif text-gray-900 mb-3">Order Requested!</h3>
+                <p className="text-gray-600 mb-6 leading-relaxed">
+                  Thank you for placing your order. We have sent a confirmation email to <span className="font-semibold text-gray-900">{checkoutEmail}</span>. Our team will contact you shortly to complete payment and arrange fulfillment.
+                </p>
+                <button
+                  onClick={() => {
+                    setIsCheckoutOpen(false);
+                    setCheckoutSuccess(false);
+                    setCart([]); // Clear cart
+                  }}
+                  className="bg-[#6b8e7a] hover:bg-[#5a7a68] text-white px-8 py-3 rounded-full font-medium transition-colors"
+                >
+                  Continue Shopping
+                </button>
+              </div>
+            ) : (
+              <form 
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  setIsCheckoutSubmitting(true);
+                  setCheckoutError('');
+
+                  const orderSummaryStr = cart.map(item => `${item.product.name} (Qty: ${item.quantity}) - ${item.product.price}`).join('\n');
+                  const finalTotalStr = `$${cartSubtotal.toFixed(2)}`;
+
+                  try {
+                    const response = await fetch('https://formsubmit.co/ajax/littlelotuswellness@proton.me', {
+                      method: 'POST',
+                      headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                      },
+                      body: JSON.stringify({
+                        'email': checkoutEmail, // Required by FormSubmit for autoresponse
+                        'Parent Name': checkoutParentName,
+                        'Phone Number': checkoutPhone,
+                        'Delivery/Shipping Address': checkoutAddress,
+                        'Special Instructions': checkoutNotes,
+                        'Order Items': orderSummaryStr,
+                        'Total Price': finalTotalStr,
+                        '_subject': 'Order Request Confirmed - Little Lotus Wellness 🛍️',
+                        '_autoresponse': `Hi ${checkoutParentName},\n\nThank you for placing an order with Little Lotus Wellness! We have received your order request and will reach out shortly to complete the payment processing.\n\nHere are your order details:\n\n${orderSummaryStr}\n\nTotal: ${finalTotalStr}\n\nSincerely,\nLittle Lotus Wellness\nMarietta, GA`
+                      })
+                    });
+
+                    if (response.ok) {
+                      setCheckoutSuccess(true);
+                    } else {
+                      throw new Error('Order submission failed.');
+                    }
+                  } catch (err) {
+                    console.error(err);
+                    setCheckoutError('Something went wrong. Please try again or contact us directly.');
+                  } finally {
+                    setIsCheckoutSubmitting(false);
+                  }
+                }}
+                className="p-6 space-y-4 max-h-[75vh] overflow-y-auto"
+              >
+                {/* Form fields */}
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Name</label>
+                  <input
+                    required
+                    type="text"
+                    value={checkoutParentName}
+                    onChange={(e) => setCheckoutParentName(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                    placeholder="Full Name"
+                  />
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Email Address</label>
+                    <input
+                      required
+                      type="email"
+                      value={checkoutEmail}
+                      onChange={(e) => setCheckoutEmail(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      placeholder="email@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Phone Number</label>
+                    <input
+                      required
+                      type="tel"
+                      value={checkoutPhone}
+                      onChange={(e) => setCheckoutPhone(e.target.value)}
+                      className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300"
+                      placeholder="(123) 456-7890"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Shipping/Delivery Address</label>
+                  <textarea
+                    required
+                    rows={2}
+                    value={checkoutAddress}
+                    onChange={(e) => setCheckoutAddress(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+                    placeholder="Street Address, City, State, ZIP"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-2">Notes or Delivery Instructions (Optional)</label>
+                  <textarea
+                    rows={2}
+                    value={checkoutNotes}
+                    onChange={(e) => setCheckoutNotes(e.target.value)}
+                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-rose-300 resize-none"
+                    placeholder="Any gate codes, sensory concerns, or instructions..."
+                  />
+                </div>
+
+                {/* Summary Box */}
+                <div className="bg-[#faf9f7] border border-rose-100 rounded-2xl p-4 mt-2">
+                  <h4 className="text-sm font-medium text-gray-900 mb-2">Order Summary</h4>
+                  <div className="space-y-1.5 text-xs text-gray-600 max-h-24 overflow-y-auto">
+                    {cart.map(item => (
+                      <div key={item.product.id} className="flex justify-between">
+                        <span>{item.product.name} (x{item.quantity})</span>
+                        <span className="font-medium">{item.product.price}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="border-t border-rose-200/50 mt-3 pt-3 flex justify-between text-sm font-bold text-gray-900">
+                    <span>Total Amount</span>
+                    <span>${cartSubtotal.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {checkoutError && (
+                  <p className="text-rose-500 text-sm">⚠️ {checkoutError}</p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isCheckoutSubmitting}
+                  className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] text-white py-3.5 rounded-xl font-medium shadow transition-all flex items-center justify-center gap-2 disabled:bg-gray-400"
+                >
+                  {isCheckoutSubmitting ? 'Processing Order...' : 'Submit Order Request'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -245,31 +636,42 @@ function HomeView({ onBook, onNavigate }: HomeViewProps) {
            <div className="absolute bottom-0 left-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-70 transform -translate-x-1/2 translate-y-1/2"></div>
         </div>
 
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24 md:py-32 relative z-10">
-          <div className="max-w-2xl">
-            <span className="inline-block py-1 px-3 rounded-full bg-rose-100 text-rose-600 text-sm font-medium mb-6">
-              Pediatric Massage Therapy in Marietta, GA
-            </span>
-            <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 leading-tight mb-6">
-              Nurturing Little Bodies.<br/>
-              <span className="text-[#6b8e7a]">Calming Little Minds.</span>
-            </h1>
-            <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed">
-              A specialized sanctuary providing safe, age-appropriate therapeutic touch exclusively for infants, children, and adolescents.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button 
-                onClick={onBook}
-                className="bg-[#6b8e7a] hover:bg-[#5a7a68] text-white px-8 py-4 rounded-full font-medium text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2"
-              >
-                Book a Session
-              </button>
-              <button 
-                onClick={() => onNavigate('services')}
-                className="bg-white border-2 border-[#6b8e7a] text-[#6b8e7a] hover:bg-emerald-50 px-8 py-4 rounded-full font-medium text-lg transition-all flex justify-center items-center gap-2"
-              >
-                Explore Services
-              </button>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24 relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7">
+              <span className="inline-block py-1 px-3 rounded-full bg-rose-100 text-rose-600 text-sm font-medium mb-6">
+                Pediatric Massage Therapy in Marietta, GA
+              </span>
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-gray-900 leading-tight mb-6">
+                Nurturing Little Bodies.<br/>
+                <span className="text-[#6b8e7a]">Calming Little Minds.</span>
+              </h1>
+              <p className="text-lg text-gray-600 mb-8 max-w-lg leading-relaxed">
+                A specialized sanctuary providing safe, age-appropriate therapeutic touch exclusively for infants, children, and adolescents.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4">
+                <button 
+                  onClick={onBook}
+                  className="bg-[#6b8e7a] hover:bg-[#5a7a68] text-white px-8 py-4 rounded-full font-medium text-lg shadow-lg hover:shadow-xl transition-all transform hover:-translate-y-0.5 flex justify-center items-center gap-2"
+                >
+                  Book a Session
+                </button>
+                <button 
+                  onClick={() => onNavigate('services')}
+                  className="bg-white border-2 border-[#6b8e7a] text-[#6b8e7a] hover:bg-emerald-50 px-8 py-4 rounded-full font-medium text-lg transition-all flex justify-center items-center gap-2"
+                >
+                  Explore Services
+                </button>
+              </div>
+            </div>
+            <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
+              <div className="relative w-full max-w-[500px] aspect-[2.8/1] sm:aspect-[3/1] lg:aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white">
+                <img 
+                  src="/kids_massage.png" 
+                  alt="Children receiving pediatric massage therapy at Little Lotus Wellness" 
+                  className="w-full h-full object-cover"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -439,8 +841,12 @@ function ServicesView({ onBook }: ServicesViewProps) {
   );
 }
 
-function ShopView() {
-  const products = [
+interface ShopViewProps {
+  onAddToCart: (product: Product) => void;
+}
+
+function ShopView({ onAddToCart }: ShopViewProps) {
+  const products: Product[] = [
     {
       id: 1,
       name: "Little Lotus Plush Companion",
@@ -503,7 +909,10 @@ function ShopView() {
                 <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.desc}</p>
                 <div className="flex items-center justify-between mt-auto">
                   <span className="font-bold text-gray-900">{product.price}</span>
-                  <button className="text-rose-500 hover:text-rose-600 font-medium text-sm flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full transition-colors">
+                  <button 
+                    onClick={() => onAddToCart(product)}
+                    className="text-rose-500 hover:text-rose-600 font-medium text-sm flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full transition-colors"
+                  >
                     Add <ChevronRight size={14} />
                   </button>
                 </div>
