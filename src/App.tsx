@@ -87,7 +87,7 @@ export default function App() {
             <div className="hidden md:flex items-center gap-8">
               <button onClick={() => navigateTo('home')} className={`text-sm font-medium transition-colors ${currentView === 'home' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>Home</button>
               <button onClick={() => navigateTo('services')} className={`text-sm font-medium transition-colors ${currentView === 'services' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>Services</button>
-              <button onClick={() => navigateTo('shop')} className={`text-sm font-medium transition-colors ${currentView === 'shop' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>Boutique</button>
+              <button onClick={() => navigateTo('shop')} className={`text-sm font-medium transition-colors ${currentView === 'shop' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>Shop</button>
               <button onClick={() => navigateTo('faq')} className={`text-sm font-medium transition-colors ${currentView === 'faq' ? 'text-rose-500' : 'text-gray-600 hover:text-[#6b8e7a]'}`}>FAQ</button>
               <button 
                 onClick={() => setIsBookingModalOpen(true)}
@@ -112,7 +112,7 @@ export default function App() {
           <div className="md:hidden bg-white border-b border-rose-100 px-4 pt-2 pb-6 space-y-2 shadow-lg">
             <button onClick={() => navigateTo('home')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">Home</button>
             <button onClick={() => navigateTo('services')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">Services</button>
-            <button onClick={() => navigateTo('shop')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">Boutique</button>
+            <button onClick={() => navigateTo('shop')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">Shop</button>
             <button onClick={() => navigateTo('faq')} className="block w-full text-left px-4 py-3 text-gray-700 hover:bg-rose-50 rounded-lg">FAQ</button>
             <div className="pt-2">
               <button 
@@ -169,7 +169,7 @@ export default function App() {
             <ul className="space-y-2 text-sm text-emerald-100">
               <li><button onClick={() => navigateTo('home')} className="hover:text-white transition-colors">Home</button></li>
               <li><button onClick={() => navigateTo('services')} className="hover:text-white transition-colors">Our Services</button></li>
-              <li><button onClick={() => navigateTo('shop')} className="hover:text-white transition-colors">Online Boutique</button></li>
+              <li><button onClick={() => navigateTo('shop')} className="hover:text-white transition-colors">Online Shop</button></li>
               <li><button onClick={() => navigateTo('faq')} className="hover:text-white transition-colors">Parent FAQ</button></li>
             </ul>
           </div>
@@ -484,7 +484,7 @@ function ShopView() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <ShoppingBag className="mx-auto mb-4 text-[#6b8e7a]" size={48} />
-          <h1 className="text-4xl font-serif text-gray-900 mb-4">Online Boutique</h1>
+          <h1 className="text-4xl font-serif text-gray-900 mb-4">Online Shop</h1>
           <p className="text-lg text-gray-600">
             Bringing the tranquility of our clinic into your home. Carefully curated items to support your child’s wellness journey.
           </p>
@@ -515,7 +515,7 @@ function ShopView() {
         <div className="mt-20 bg-rose-50 rounded-3xl p-8 md:p-12 text-center border border-rose-100">
           <h3 className="text-2xl font-serif text-[#6b8e7a] mb-4">Why Shop With Us?</h3>
           <p className="text-gray-600 max-w-3xl mx-auto">
-            Every product in our boutique is tested for safety, durability, and its ability to contribute positively to a child’s sensory and emotional health. When you shop at Little Lotus Wellness, you are choosing quality products that align with the holistic care your child receives in our treatment rooms.
+            Every product in our shop is tested for safety, durability, and its ability to contribute positively to a child’s sensory and emotional health. When you shop at Little Lotus Wellness, you are choosing quality products that align with the holistic care your child receives in our treatment rooms.
           </p>
         </div>
       </div>
