@@ -12,8 +12,7 @@ import {
   X, 
   ChevronRight,
   ShieldCheck,
-  Flower2,
-  Clock
+  Flower2
 } from 'lucide-react';
 
 export default function App() {
@@ -345,81 +344,83 @@ interface ServicesViewProps {
 }
 
 function ServicesView({ onBook }: ServicesViewProps) {
-  const packages = [
+  const services = [
     {
-      title: "Athletic Recovery & Performance",
-      description: "Designed for young athletes, this session focuses on muscle recovery, tension release, and improving range of motion to support active lifestyles.",
-      icon: <Leaf className="text-emerald-500" size={32} />,
-      color: "bg-emerald-50"
+      title: "PEDIATRIC MASSAGE",
+      timePrice: "30 OR 60 MINUTES  •  $70 / $85",
+      description: "Gentle, age-appropriate massage techniques to help reduce stress, ease muscle tension, improve sleep, and support overall well-being.",
+      image: "/pediatric_massage.png",
+      iconColor: "bg-purple-100 text-purple-600",
+      titleColor: "text-purple-600",
+      icon: <Heart size={24} className="shrink-0" />
     },
     {
-      title: "Calm & Centered",
-      description: "A supportive approach for children navigating school-related stress, anxiety, or busy schedules. Promotes deep relaxation and emotional well-being.",
-      icon: <Heart className="text-rose-400" size={32} />,
-      color: "bg-rose-50"
+      title: "EXPRESS GLOW FACIAL",
+      timePrice: "30 OR 60 MINUTES  •  $70 / $135",
+      description: "A gentle facial designed for young, delicate skin to cleanse, hydrate, and promote a healthy, natural glow.",
+      image: "/express_glow_facial.png",
+      iconColor: "bg-rose-100 text-rose-500",
+      titleColor: "text-rose-500",
+      icon: <Smile size={24} className="shrink-0" />
     },
     {
-      title: "Growing Comfort",
-      description: "Targeted relief for children experiencing growing pains and physical discomfort associated with rapid growth spurts.",
-      icon: <Smile className="text-amber-500" size={32} />,
-      color: "bg-amber-50"
-    },
-    {
-      title: "Sensory Support",
-      description: "A specialized, individualized session that uses gentle, grounding touch to support children with sensory processing needs.",
-      icon: <Flower2 className="text-purple-500" size={32} />,
-      color: "bg-purple-50"
+      title: "LYMPHATIC MASSAGE",
+      timePrice: "30 OR 60 MINUTES  •  $70 / $135",
+      description: "Light, soothing techniques that support the lymphatic system, reduce puffiness, improve circulation, and enhance the body's natural detox process.",
+      image: "/lymphatic_massage.png",
+      iconColor: "bg-emerald-100 text-emerald-600",
+      titleColor: "text-emerald-600",
+      icon: <Leaf size={24} className="shrink-0" />
     }
   ];
 
   return (
     <div className="animate-in fade-in duration-500 py-16 bg-[#faf9f7]">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h1 className="text-4xl font-serif text-gray-900 mb-4">Tailored Pediatric Care</h1>
+          <h1 className="text-4xl font-serif text-gray-900 mb-4">Our Services</h1>
           <p className="text-lg text-gray-600">
-            Every child's journey is unique. Our sessions are carefully tailored to meet the physical, emotional, and sensory needs of your child.
+            Professional, age-appropriate therapeutic treatments tailored to meet the physical and emotional needs of your child.
           </p>
         </div>
 
-        {/* Core Offering */}
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-rose-100 mb-16 relative overflow-hidden">
-          <div className="absolute top-0 right-0 bg-rose-100 px-6 py-2 rounded-bl-3xl font-medium text-rose-600">
-            Primary Service
-          </div>
-          <div className="flex flex-col md:flex-row gap-8 items-center justify-between">
-            <div className="flex-1">
-              <h2 className="text-3xl font-serif text-[#6b8e7a] mb-2">Pediatric Massage Therapy</h2>
-              <div className="flex items-center gap-2 text-gray-500 mb-6">
-                <Clock size={18} />
-                <span>60 Minutes</span>
-                <span className="mx-2">•</span>
-                <span className="font-semibold text-gray-800 text-lg">$85</span>
-              </div>
-              <p className="text-gray-600 leading-relaxed mb-6">
-                Our foundational therapeutic session provides a safe, gentle, and age-appropriate experience. Every appointment includes a brief, personalized consultation to ensure the treatment aligns with your child’s current developmental stage and wellness goals.
-              </p>
-              <button 
-                onClick={onBook}
-                className="bg-rose-300 hover:bg-rose-400 text-[#5a7a68] font-medium px-8 py-3 rounded-full transition-colors inline-flex items-center gap-2"
-              >
-                Schedule Session <ChevronRight size={18} />
-              </button>
-            </div>
-          </div>
-        </div>
+        {/* Services List */}
+        <div className="space-y-12">
+          {services.map((service, idx) => (
+            <div key={idx}>
+              {idx > 0 && <hr className="border-t border-dashed border-rose-200/60 mb-12" />}
+              <div className="flex flex-col md:flex-row gap-8 items-center">
+                {/* Circular Image */}
+                <div className="w-44 h-44 shrink-0 rounded-full overflow-hidden border-4 border-rose-100/50 shadow-md">
+                  <img src={service.image} alt={service.title} className="w-full h-full object-cover" />
+                </div>
+                
+                {/* Content */}
+                <div className="flex-1 text-center md:text-left">
+                  <div className="flex flex-col md:flex-row items-center gap-3 mb-2 justify-center md:justify-start">
+                    <div className={`p-2 rounded-full ${service.iconColor}`}>
+                      {service.icon}
+                    </div>
+                    <h2 className={`text-xl font-bold tracking-wider ${service.titleColor}`}>{service.title}</h2>
+                  </div>
+                  
+                  <div className="text-xs uppercase tracking-widest text-gray-500 font-semibold mb-4">
+                    {service.timePrice}
+                  </div>
+                  
+                  <p className="text-gray-600 leading-relaxed mb-6 max-w-2xl">
+                    {service.description}
+                  </p>
 
-        {/* Specialized Packages */}
-        <h3 className="text-2xl font-serif text-gray-900 mb-8 text-center">Specialized Wellness Packages</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {packages.map((pkg, idx) => (
-            <div key={idx} className={`${pkg.color} rounded-2xl p-8 border border-white/50 shadow-sm hover:shadow-md transition-shadow`}>
-              <div className="bg-white w-14 h-14 rounded-full flex items-center justify-center shadow-sm mb-6">
-                {pkg.icon}
+                  <button 
+                    onClick={onBook}
+                    className="bg-[#6b8e7a] hover:bg-[#5a7a68] text-white font-medium px-6 py-2.5 rounded-full text-sm transition-all shadow-sm flex items-center gap-2 mx-auto md:mx-0"
+                  >
+                    Book an Appointment
+                  </button>
+                </div>
               </div>
-              <h4 className="text-xl font-medium text-gray-900 mb-3">{pkg.title}</h4>
-              <p className="text-gray-600 leading-relaxed">{pkg.description}</p>
             </div>
           ))}
         </div>
@@ -619,7 +620,7 @@ function BookingModal({ onClose }: BookingModalProps) {
   const [parentName, setParentName] = useState('');
   const [childAge, setChildAge] = useState('');
   const [email, setEmail] = useState('');
-  const [service, setService] = useState('Pediatric Massage (Standard 60 min)');
+  const [service, setService] = useState('Pediatric Massage');
   const [date, setDate] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
   const [notes, setNotes] = useState('');
@@ -959,11 +960,9 @@ function BookingModal({ onClose }: BookingModalProps) {
                   onChange={(e) => setService(e.target.value)}
                   className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800"
                 >
-                  <option>Pediatric Massage (Standard 60 min)</option>
-                  <option>Athletic Recovery & Performance</option>
-                  <option>Calm & Centered (Stress Relief)</option>
-                  <option>Growing Comfort</option>
-                  <option>Sensory Support</option>
+                  <option>Pediatric Massage</option>
+                  <option>Express Glow Facial</option>
+                  <option>Lymphatic Massage</option>
                 </select>
               </div>
 
