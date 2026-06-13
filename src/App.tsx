@@ -567,7 +567,7 @@ function FaqView() {
         {/* Location Box embedded in FAQ/Contact area */}
         <div className="mt-16 bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 flex flex-col md:flex-row">
           <div className="bg-rose-50 p-8 md:w-1/2 flex flex-col justify-center">
-            <h3 className="text-2xl font-serif text-gray-900 mb-6">Visit Our Sanctuary</h3>
+            <h3 className="text-2xl font-serif text-gray-900 mb-6">Visit Our Wellness</h3>
             <ul className="space-y-4 text-gray-600">
               <li className="flex items-start gap-3">
                 <MapPin className="text-[#6b8e7a] shrink-0 mt-1" size={20} />
