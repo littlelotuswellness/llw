@@ -665,9 +665,9 @@ function HomeView({ onBook, onNavigate }: HomeViewProps) {
               </div>
             </div>
             <div className="lg:col-span-5 relative flex justify-center lg:justify-end">
-              <div className="relative w-full max-w-[500px] aspect-[2.8/1] sm:aspect-[3/1] lg:aspect-[4/3] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white">
+              <div className="relative w-full max-w-[400px] aspect-[4/3] sm:aspect-square lg:aspect-[3/4] rounded-3xl overflow-hidden shadow-xl border-4 border-white bg-white">
                 <img 
-                  src="/kids_massage.png" 
+                  src="/kids_massage_portrait.png" 
                   alt="Children receiving pediatric massage therapy at Little Lotus Wellness" 
                   className="w-full h-full object-cover"
                 />
