@@ -38,7 +38,33 @@ interface CartItem {
 }
 
 export default function App() {
-  const [currentView, setCurrentView] = useState('home');
+  // Hash Routing Logic
+  const getInitialView = () => {
+    const hash = window.location.hash.replace('#/', '');
+    const validViews = ['home', 'services', 'shop', 'faq'];
+    return validViews.includes(hash) ? hash : 'home';
+  };
+
+  const [currentView, setCurrentView] = useState(getInitialView);
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace('#/', '');
+      const validViews = ['home', 'services', 'shop', 'faq'];
+      if (validViews.includes(hash)) {
+        setCurrentView(hash);
+      }
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    
+    // Set initial hash if empty
+    if (!window.location.hash) {
+      window.location.hash = `#/home`;
+    }
+
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [newsletterEmail, setNewsletterEmail] = useState('');
@@ -101,6 +127,7 @@ export default function App() {
   }, 0);
 
   const navigateTo = (view: string) => {
+    window.location.hash = `#/${view}`;
     setCurrentView(view);
     setIsMobileMenuOpen(false);
     window.scrollTo(0, 0);
