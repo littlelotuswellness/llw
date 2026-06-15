@@ -1089,6 +1089,39 @@ function ShopView({ onAddToCart }: ShopViewProps) {
 function FaqView() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
+  const renderFaqAnswer = (text: string) => {
+    return text.split('\n').map((paragraph, pIdx) => {
+      const trimmed = paragraph.trim();
+      if (!trimmed) return <div key={pIdx} className="h-2" />;
+      
+      if (trimmed.endsWith(':')) {
+        return (
+          <p key={pIdx} className="font-bold text-gray-800 mb-2 mt-4 first:mt-0">
+            {paragraph}
+          </p>
+        );
+      }
+      
+      if (trimmed.startsWith('•') && trimmed.includes(':')) {
+        const colonIdx = paragraph.indexOf(':');
+        const title = paragraph.substring(0, colonIdx + 1);
+        const rest = paragraph.substring(colonIdx + 1);
+        return (
+          <p key={pIdx} className="text-gray-600 mb-2.5 leading-relaxed">
+            <span className="font-bold text-gray-850">{title}</span>
+            {rest}
+          </p>
+        );
+      }
+
+      return (
+        <p key={pIdx} className="text-gray-600 mb-2.5 leading-relaxed">
+          {paragraph}
+        </p>
+      );
+    });
+  };
+
   const faqs = [
     {
       q: "Why do you choose Little Lotus Wellness?",
@@ -1157,8 +1190,8 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
                 <div 
                   className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[1000px] border-t border-rose-50/50' : 'max-h-0'}`}
                 >
-                  <div className="px-6 py-5 md:px-8 md:py-6 bg-[#faf9f7]/30 leading-relaxed whitespace-pre-line text-sm text-gray-600">
-                    {faq.a}
+                  <div className="px-6 py-5 md:px-8 md:py-6 bg-[#faf9f7]/30 text-sm">
+                    {renderFaqAnswer(faq.a)}
                   </div>
                 </div>
               </div>
