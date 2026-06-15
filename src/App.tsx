@@ -1225,13 +1225,17 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
               <p className="text-sm text-gray-500 font-medium">✓ Just minutes from Marietta Square</p>
             </div>
           </div>
-          <div className="md:w-1/2 bg-gray-200 min-h-[300px] relative flex items-center justify-center">
-            {/* Visual map placeholder to prevent loading real iframe which might break or have API key issues */}
-            <div className="absolute inset-0 bg-emerald-100/50 flex flex-col items-center justify-center p-8 text-center">
-              <MapPin size={48} className="text-[#6b8e7a] mb-4 opacity-50" />
-              <p className="text-[#5a7a68] font-medium">Interactive Google Map Area</p>
-              <p className="text-sm text-emerald-700/70 mt-2">Near Green Acres Elementary School</p>
-            </div>
+          <div className="md:w-1/2 bg-gray-200 min-h-[300px] relative">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3310.233069150036!2d-84.544773824289!3d33.94799042337775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f515e06180572b%3A0xb3660df890b0e513!2s316%20Alexander%20St%20SE%20%232%2C%20Marietta%2C%20GA%2030060!5e0!3m2!1sen!2sus!4v1718139000000!5m2!1sen!2sus" 
+              width="100%" 
+              height="100%" 
+              className="absolute inset-0 w-full h-full border-0" 
+              allowFullScreen={true}
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              title="Little Lotus Wellness Location Map"
+            ></iframe>
           </div>
         </div>
       </div>
