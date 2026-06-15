@@ -27,6 +27,9 @@ interface Product {
   desc: string;
   bgColor: string;
   icon: React.ReactNode;
+  image: string;
+  benefits?: string[];
+  howToUse?: string;
 }
 
 interface CartItem {
@@ -846,6 +849,8 @@ interface ShopViewProps {
 }
 
 function ShopView({ onAddToCart }: ShopViewProps) {
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
   const products: Product[] = [
     {
       id: 1,
@@ -854,7 +859,10 @@ function ShopView({ onAddToCart }: ShopViewProps) {
       price: "$24.00",
       desc: "Our signature soft, comforting friend perfect for helping children feel secure during bedtime.",
       bgColor: "bg-rose-100",
-      icon: <Heart size={40} className="text-rose-400" />
+      icon: <Heart size={20} className="text-rose-400" />,
+      image: "/plush_companion.png",
+      benefits: ["Promotes self-soothing", "Provides comforting tactile feedback", "Reduces bedtime anxiety"],
+      howToUse: "Encourage your child to hold the plush companion during deep-breathing exercises, or place it nearby during bedtime and clinic sessions to establish a sense of safety and calm."
     },
     {
       id: 2,
@@ -863,7 +871,10 @@ function ShopView({ onAddToCart }: ShopViewProps) {
       price: "$15.00",
       desc: "Child-safe essential oil blend formulated to promote a peaceful atmosphere and settle busy minds.",
       bgColor: "bg-purple-100",
-      icon: <Leaf size={40} className="text-purple-400" />
+      icon: <Leaf size={20} className="text-purple-400" />,
+      image: "/lavender_rollon.png",
+      benefits: ["Eases nervous tension", "Supports healthy sleep transitions", "Calms overstimulated senses"],
+      howToUse: "Gently roll onto wrists, temples, or the back of the neck. Designed for safe, topical application on children aged 2 and up."
     },
     {
       id: 3,
@@ -872,7 +883,10 @@ function ShopView({ onAddToCart }: ShopViewProps) {
       price: "$18.00",
       desc: "A soft, easy-to-grip tool to help your child maintain the benefits of therapeutic sessions at home.",
       bgColor: "bg-emerald-100",
-      icon: <Smile size={40} className="text-emerald-400" />
+      icon: <Smile size={20} className="text-emerald-400" />,
+      image: "/massage_tool.png",
+      benefits: ["Enhances sensory integration", "Stimulates local circulation", "Encourages parent-child bonding"],
+      howToUse: "Use slow, gentle, sweeping strokes along your child's arms, back, or legs. Great for creating a relaxing home massage ritual between clinical visits."
     },
     {
       id: 4,
@@ -881,12 +895,15 @@ function ShopView({ onAddToCart }: ShopViewProps) {
       price: "$35.00",
       desc: "Provides gentle, grounding pressure to support sensory processing needs during seated activities.",
       bgColor: "bg-amber-100",
-      icon: <ShieldCheck size={40} className="text-amber-400" />
+      icon: <ShieldCheck size={20} className="text-amber-400" />,
+      image: "/lap_pad.png",
+      benefits: ["Provides deep touch pressure (DTP)", "Increases attention span and focus", "Decreases motor restlessness"],
+      howToUse: "Drape across your child's thighs while they are seated for homework, meals, or sensory quiet time. Weighs 3 lbs, perfect for toddlers and elementary-aged kids."
     }
   ];
 
   return (
-    <div className="animate-in fade-in duration-500 py-16 bg-white">
+    <div className="animate-in fade-in duration-500 py-16 bg-[#faf9f7]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-16">
           <ShoppingBag className="mx-auto mb-4 text-[#6b8e7a]" size={48} />
@@ -898,22 +915,36 @@ function ShopView({ onAddToCart }: ShopViewProps) {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
           {products.map(product => (
-            <div key={product.id} className="group border border-gray-100 rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300">
-              <div className={`aspect-square ${product.bgColor} flex items-center justify-center relative overflow-hidden`}>
-                {product.icon}
+            <div 
+              key={product.id} 
+              onClick={() => setSelectedProduct(product)}
+              className="group border border-gray-100 bg-white rounded-2xl overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col h-[450px]"
+            >
+              <div className="aspect-square bg-gray-50 flex items-center justify-center relative overflow-hidden shrink-0">
+                <img 
+                  src={product.image} 
+                  alt={product.name} 
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute top-3 right-3 p-1.5 rounded-full bg-white/90 shadow-sm">
+                  {product.icon}
+                </div>
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors" />
               </div>
-              <div className="p-6 flex flex-col h-[280px]">
-                <p className="text-xs font-semibold uppercase tracking-wider text-[#6b8e7a] mb-2">{product.category}</p>
-                <h3 className="text-lg font-medium text-gray-900 mb-2">{product.name}</h3>
-                <p className="text-gray-500 text-sm mb-4 line-clamp-2">{product.desc}</p>
-                <div className="flex items-center justify-between mt-auto">
+              <div className="p-6 flex flex-col flex-1">
+                <p className="text-[10px] font-bold uppercase tracking-wider text-[#6b8e7a] mb-1.5">{product.category}</p>
+                <h3 className="text-base font-semibold text-gray-900 mb-2 truncate group-hover:text-[#6b8e7a] transition-colors">{product.name}</h3>
+                <p className="text-gray-500 text-xs mb-4 line-clamp-2 leading-relaxed">{product.desc}</p>
+                <div className="flex items-center justify-between mt-auto pt-2">
                   <span className="font-bold text-gray-900">{product.price}</span>
                   <button 
-                    onClick={() => onAddToCart(product)}
-                    className="text-rose-500 hover:text-rose-600 font-medium text-sm flex items-center gap-1 bg-rose-50 px-3 py-1.5 rounded-full transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddToCart(product);
+                    }}
+                    className="text-rose-500 hover:text-[#6b8e7a] font-medium text-xs flex items-center gap-1 bg-rose-50 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors"
                   >
-                    Add <ChevronRight size={14} />
+                    Add <ChevronRight size={12} />
                   </button>
                 </div>
               </div>
@@ -928,6 +959,102 @@ function ShopView({ onAddToCart }: ShopViewProps) {
           </p>
         </div>
       </div>
+
+      {/* Product Details Modal */}
+      {selectedProduct && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
+          {/* Backdrop */}
+          <div 
+            className="fixed inset-0 bg-black/40 backdrop-blur-sm transition-opacity" 
+            onClick={() => setSelectedProduct(null)}
+          />
+
+          {/* Modal Content */}
+          <div className="relative bg-white rounded-3xl w-full max-w-2xl overflow-hidden shadow-2xl border border-rose-100 z-10 animate-in zoom-in-95 duration-200 flex flex-col md:flex-row">
+            {/* Left side: Image */}
+            <div className="w-full md:w-1/2 aspect-square md:aspect-auto md:h-[450px] relative bg-gray-50 shrink-0">
+              <img 
+                src={selectedProduct.image} 
+                alt={selectedProduct.name} 
+                className="w-full h-full object-cover"
+              />
+              <button 
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-4 left-4 rounded-full p-2 bg-white/90 hover:bg-white text-gray-500 hover:text-gray-700 shadow-md transition-colors md:hidden"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            {/* Right side: Info */}
+            <div className="w-full md:w-1/2 p-8 flex flex-col h-[450px] overflow-y-auto relative">
+              {/* Close Button Desktop */}
+              <button 
+                onClick={() => setSelectedProduct(null)}
+                className="absolute top-4 right-4 rounded-full p-1.5 text-gray-400 hover:text-gray-600 hover:bg-rose-50 transition-colors hidden md:block"
+              >
+                <X size={20} />
+              </button>
+
+              <span className="text-[10px] font-bold uppercase tracking-wider text-[#6b8e7a] mb-2 inline-flex items-center gap-1.5">
+                <span className="p-1 rounded-full bg-rose-50">{selectedProduct.icon}</span>
+                {selectedProduct.category}
+              </span>
+              <h2 className="text-xl font-serif text-gray-900 mb-2.5 leading-snug">
+                {selectedProduct.name}
+              </h2>
+              <p className="text-lg font-bold text-rose-500 mb-4">
+                {selectedProduct.price}
+              </p>
+              
+              <div className="border-t border-rose-100/50 pt-4 mb-4 space-y-4">
+                <div>
+                  <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Description</h4>
+                  <p className="text-xs text-gray-600 leading-relaxed">
+                    {selectedProduct.desc}
+                  </p>
+                </div>
+
+                {selectedProduct.benefits && (
+                  <div>
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1.5">Key Benefits</h4>
+                    <ul className="text-xs text-gray-600 space-y-1">
+                      {selectedProduct.benefits.map((b, idx) => (
+                        <li key={idx} className="flex items-center gap-1.5">
+                          <span className="text-rose-400 font-bold">•</span>
+                          {b}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {selectedProduct.howToUse && (
+                  <div>
+                    <h4 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">How To Use</h4>
+                    <p className="text-xs text-gray-500 italic leading-relaxed">
+                      {selectedProduct.howToUse}
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-auto pt-4 border-t border-rose-100/30">
+                <button
+                  onClick={() => {
+                    onAddToCart(selectedProduct);
+                    setSelectedProduct(null);
+                  }}
+                  className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] text-white py-3 rounded-full font-medium shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <ShoppingCart size={16} />
+                  Add to Cart • {selectedProduct.price}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
