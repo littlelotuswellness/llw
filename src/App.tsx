@@ -1062,6 +1062,22 @@ function ShopView({ onAddToCart }: ShopViewProps) {
 function FaqView() {
   const faqs = [
     {
+      q: "Why do you choose Little Lotus Wellness?",
+      a: `You should choose Little Lotus Wellness because we fill a crucial, underserved niche in the wellness market: an exclusive focus on pediatric massage therapy. While most massage clinics are built to serve adults, our practice is specifically designed from the ground up to meet the unique developmental, emotional, and physical needs of infants, children, and adolescents up to 18 years of age. We do not just offer a miniaturized version of an adult massage; we provide a highly specialized, holistic approach to children's wellness.
+
+Families choose us for several distinct reasons:
+
+• Tailored Solutions for Childhood Challenges: Children today face a surprising amount of stress from school, sports, technology, and busy family schedules. We provide individualized treatments that specifically target these issues. Whether a child needs athletic recovery, relief from growing pains, calming techniques for anxiety, or gentle grounding for sensory processing challenges, we have a specialized approach for them.
+
+• A Family-Centered Philosophy: We view parents as vital partners in their child's wellness journey. Unlike traditional clinical settings, we actively encourage parents to stay in the treatment room during the session to ensure their child feels completely safe, supported, and comfortable.
+
+• A Safe, Nurturing Sanctuary: Our clinic environment is thoughtfully designed to be a child-friendly haven. Using soothing decor, gentle lighting, and relaxing music, we have created a peaceful space where children can immediately feel at ease and cared for.
+
+• A Natural Approach to Wellness: We provide a natural, non-invasive way to help children relax, recover, and build better body awareness.
+
+Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe, compassionate, and highly professional environment dedicated entirely to helping young clients thrive in mind, body, and spirit.`
+    },
+    {
       q: "What is pediatric massage?",
       a: "Pediatric massage is a safe, gentle, and age-appropriate therapeutic touch designed specifically for the unique physical and emotional needs of children. It is a holistic approach to wellness, not a miniaturized version of adult massage."
     },
@@ -1095,7 +1111,7 @@ function FaqView() {
           {faqs.map((faq, idx) => (
             <div key={idx} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
               <h3 className="text-xl font-medium text-[#6b8e7a] mb-3">{faq.q}</h3>
-              <p className="text-gray-600 leading-relaxed">{faq.a}</p>
+              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{faq.a}</p>
             </div>
           ))}
         </div>
