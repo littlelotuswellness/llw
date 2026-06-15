@@ -1060,6 +1060,8 @@ function ShopView({ onAddToCart }: ShopViewProps) {
 }
 
 function FaqView() {
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+
   const faqs = [
     {
       q: "Why do you choose Little Lotus Wellness?",
@@ -1107,13 +1109,34 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
           <p className="text-lg text-gray-600">Everything you need to know about preparing for your visit.</p>
         </div>
 
-        <div className="space-y-6">
-          {faqs.map((faq, idx) => (
-            <div key={idx} className="bg-white rounded-2xl p-6 md:p-8 shadow-sm border border-gray-100">
-              <h3 className="text-xl font-medium text-[#6b8e7a] mb-3">{faq.q}</h3>
-              <p className="text-gray-600 leading-relaxed whitespace-pre-line">{faq.a}</p>
-            </div>
-          ))}
+        <div className="space-y-4">
+          {faqs.map((faq, idx) => {
+            const isOpen = openIndex === idx;
+            return (
+              <div 
+                key={idx} 
+                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden transition-all duration-300"
+              >
+                <button
+                  onClick={() => setOpenIndex(isOpen ? null : idx)}
+                  className="w-full flex justify-between items-center px-6 py-5 md:px-8 md:py-6 text-left hover:bg-rose-50/30 transition-colors"
+                >
+                  <span className="text-lg font-medium text-gray-900 hover:text-[#6b8e7a] transition-colors">{faq.q}</span>
+                  <ChevronRight 
+                    className={`text-[#6b8e7a] transition-transform duration-300 shrink-0 ml-4 ${isOpen ? 'rotate-90' : ''}`} 
+                    size={20} 
+                  />
+                </button>
+                <div 
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? 'max-h-[1000px] border-t border-rose-50/50' : 'max-h-0'}`}
+                >
+                  <div className="px-6 py-5 md:px-8 md:py-6 bg-[#faf9f7]/30 leading-relaxed whitespace-pre-line text-sm text-gray-600">
+                    {faq.a}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
         {/* Location Box embedded in FAQ/Contact area */}
