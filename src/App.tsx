@@ -1444,17 +1444,28 @@ function BookingModal({ onClose }: BookingModalProps) {
     return false;
   };
 
-  // Get the end time of an appointment slot
+  // Get the end time of an appointment slot (duration + 15 mins buffer)
   const getEndTime = (startTimeStr: string, durationMins: number) => {
-    const idx = TIME_BLOCKS.indexOf(startTimeStr);
-    if (idx === -1) return "";
-    const endIdx = idx + (durationMins / 30);
-    if (endIdx < TIME_BLOCKS.length) {
-      return TIME_BLOCKS[endIdx];
-    } else if (endIdx === TIME_BLOCKS.length) {
-      return "07:00 PM";
-    }
-    return "After Hours";
+    const [time, modifier] = startTimeStr.split(' ');
+    const [hoursStr, minutesStr] = time.split(':');
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    
+    const date = new Date();
+    date.setHours(hours, minutes + durationMins + 15, 0, 0);
+    
+    let endHours = date.getHours();
+    const endMinutes = date.getMinutes();
+    const endModifier = endHours >= 12 ? 'PM' : 'AM';
+    
+    if (endHours > 12) endHours -= 12;
+    if (endHours === 0) endHours = 12;
+    
+    const formattedMinutes = endMinutes.toString().padStart(2, '0');
+    return `${endHours.toString().padStart(2, '0')}:${formattedMinutes} ${endModifier}`;
   };
 
   // Slot availability verification
