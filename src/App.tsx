@@ -283,6 +283,14 @@ export default function App() {
             </p>
             <div className="space-y-3 text-sm text-emerald-50">
               <div className="flex items-start gap-3">
+                <Clock size={18} className="text-rose-200 shrink-0 mt-0.5" />
+                <div>
+                  <p className="font-semibold text-white">Trading Hours:</p>
+                  <p>Tuesday – Saturday, 11:00 AM – 07:00 PM</p>
+                  <p className="text-xs text-rose-200">(Closed Sunday & Monday)</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-3">
                 <MapPin size={18} className="text-rose-200 shrink-0 mt-0.5" />
                 <p>316 Alexander St SE, Suite 2<br/>Marietta, GA 30060</p>
               </div>
