@@ -1234,8 +1234,9 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
                 <Clock className="text-[#6b8e7a] shrink-0 mt-1" size={20} />
                 <div>
                   <span className="font-semibold block text-gray-900 text-sm">Trading Hours</span>
-                  <span className="text-sm">Tuesday – Saturday: 11:00 AM – 07:00 PM</span>
-                  <span className="text-xs text-red-800 bg-pink-100 px-2 py-0.5 rounded inline-block mt-1.5 font-bold">(Closed Sunday & Monday)</span>
+                  <p className="text-xs sm:text-sm text-gray-600">
+                    Tuesday – Saturday: 11:00 AM – 07:00 PM <span className="text-xs text-red-800 bg-pink-100 px-2 py-0.5 rounded inline-block font-bold ml-1.5">(Closed Sunday & Monday)</span>
+                  </p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
