@@ -1729,9 +1729,6 @@ function BookingModal({ onClose }: BookingModalProps) {
                         <option>Pediatric Massage Session (Standard - $85/60 min)</option>
                         <option>Express Glow Facial</option>
                         <option>Lymphatic Massage</option>
-                        <option>Athletic Recovery & Performance (For young athletes)</option>
-                        <option>Calm & Centered (Anxiety & school stress relief)</option>
-                        <option>Sensory Support Session (Hypersensitive & sensory needs)</option>
                       </select>
                     </div>
 
