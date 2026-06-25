@@ -1332,7 +1332,19 @@ function BookingModal({ onClose }: BookingModalProps) {
     const saved = localStorage.getItem('llw_appointments');
     if (saved) {
       try {
-        return JSON.parse(saved);
+        const parsed = JSON.parse(saved);
+        return parsed.map((app: any) => {
+          if (app.id === "1" && app.childName === "Tommy") {
+            return {
+              ...app,
+              parentName: "Tannie Huynh",
+              childName: "Marcus",
+              email: "tannie@example.com",
+              service: "Lymphatic Massage"
+            };
+          }
+          return app;
+        });
       } catch (e) {
         console.error(e);
       }
@@ -1343,11 +1355,11 @@ function BookingModal({ onClose }: BookingModalProps) {
         date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
         time: "11:30 AM",
         duration: 60,
-        parentName: "Sarah Miller",
-        childName: "Tommy",
+        parentName: "Tannie Huynh",
+        childName: "Marcus",
         childAge: "8",
-        email: "sarah@example.com",
-        service: "Athletic Recovery & Performance",
+        email: "tannie@example.com",
+        service: "Lymphatic Massage",
         notes: "Prefers soft lighting",
         status: "booked"
       },
