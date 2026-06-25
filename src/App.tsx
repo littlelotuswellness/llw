@@ -287,7 +287,7 @@ export default function App() {
                 <div>
                   <p className="font-semibold text-white">Trading Hours:</p>
                   <p>Tuesday – Saturday, 11:00 AM – 07:00 PM</p>
-                  <p className="text-xs text-rose-200">(Closed Sunday & Monday)</p>
+                  <p className="text-xs text-pink-300 font-semibold">(Closed Sunday & Monday)</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -1234,6 +1234,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
                 <div>
                   <span className="font-semibold block text-gray-900 text-sm">Trading Hours</span>
                   <span className="text-sm">Tuesday – Saturday: 11:00 AM – 07:00 PM</span>
+                  <span className="text-xs text-pink-500 block mt-0.5 font-semibold">(Closed Sunday & Monday)</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -1301,6 +1302,7 @@ function BookingModal({ onClose }: BookingModalProps) {
   const [childAge, setChildAge] = useState('');
   const [email, setEmail] = useState('');
   const [service, setService] = useState('Pediatric Massage');
+  const [duration, setDuration] = useState('30 Minutes');
   const [date, setDate] = useState('');
   const [timeSlot, setTimeSlot] = useState('');
   const [notes, setNotes] = useState('');
@@ -1324,7 +1326,8 @@ function BookingModal({ onClose }: BookingModalProps) {
     '05:00 PM',
     '05:30 PM',
     '06:00 PM',
-    '06:30 PM'
+    '06:30 PM',
+    '07:00 PM'
   ];
 
   // Fetch date availability on mount
@@ -1471,11 +1474,12 @@ function BookingModal({ onClose }: BookingModalProps) {
           'Parent Name': parentName,
           'Child Age': childAge,
           'Service Needed': service,
+          'Session Duration': duration,
           'Preferred Date (MM/DD/YYYY)': formattedDate,
           'Preferred Time': timeSlot,
           'Notes / Sensory Needs': notes,
           '_subject': 'Appointment Request Confirmed - Little Lotus Wellness 🪷',
-          '_autoresponse': `Hi ${parentName},\n\nThank you for requesting an appointment with Little Lotus Wellness! We have received your request and will contact you shortly to confirm your booking.\n\nHere are your request details:\n- Service: ${service}\n- Date: ${formattedDate}\n- Time Slot: ${timeSlot}\n\nSincerely,\nLittle Lotus Wellness\nMarietta, GA`
+          '_autoresponse': `Hi ${parentName},\n\nThank you for requesting an appointment with Little Lotus Wellness! We have received your request and will contact you shortly to confirm your booking.\n\nHere are your request details:\n- Service: ${service} (${duration})\n- Date: ${formattedDate}\n- Time Slot: ${timeSlot}\n\nSincerely,\nLittle Lotus Wellness\nMarietta, GA`
         })
       });
 
@@ -1657,6 +1661,18 @@ function BookingModal({ onClose }: BookingModalProps) {
                   <option>Pediatric Massage</option>
                   <option>Express Glow Facial</option>
                   <option>Lymphatic Massage</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Session Duration</label>
+                <select 
+                  value={duration}
+                  onChange={(e) => setDuration(e.target.value)}
+                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800"
+                >
+                  <option>30 Minutes</option>
+                  <option>60 Minutes (1 Hour)</option>
                 </select>
               </div>
 
