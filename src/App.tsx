@@ -1400,7 +1400,7 @@ function BookingModal({ onClose }: BookingModalProps) {
     for (let i = 0; i < numBooked; i++) {
       const slotIndex = Math.abs((hash + i * 17) % timeSlots.length);
       const slot = timeSlots[slotIndex];
-      if (!booked.includes(slot)) {
+      if (!booked.includes(slot) && slot !== '06:30 PM' && slot !== '07:00 PM') {
         booked.push(slot);
       }
     }
