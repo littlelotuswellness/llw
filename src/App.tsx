@@ -1378,14 +1378,49 @@ function BookingModal({ onClose }: BookingModalProps) {
     return `${month}/${day}/${year}`;
   };
 
-  // Deterministic generator of booked slots based on the selected date
-  const getBookedSlotsForDate = (dateStr: string): string[] => {
+  const getSlotMinutes = (slot: string): number => {
+    const [time, modifier] = slot.split(' ');
+    const [hoursStr, minutesStr] = time.split(':');
+    let hours = parseInt(hoursStr, 10);
+    const minutes = parseInt(minutesStr, 10);
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
+    return hours * 60 + minutes;
+  };
+
+  const isSlotOverlapping = (candidateSlot: string, candidateDuration: string, bookedList: { slot: string; duration: string }[]): boolean => {
+    const candidateStart = getSlotMinutes(candidateSlot);
+    const candidateEnd = candidateStart + (candidateDuration.includes('60') || candidateDuration.includes('1 Hour') ? 60 : 30);
+    
+    // 1. Check if runs past 07:00 PM (1140 minutes)
+    if (candidateEnd > 19 * 60) {
+      return true;
+    }
+
+    // 2. Check overlap with booked slots
+    for (const booking of bookedList) {
+      const bookedStart = getSlotMinutes(booking.slot);
+      const bookedEnd = bookedStart + (booking.duration.includes('60') || booking.duration.includes('1 Hour') ? 60 : 30);
+      
+      // Overlap check
+      if (candidateStart < bookedEnd && candidateEnd > bookedStart) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  // Deterministic generator of booked slots based on the selected date combined with localStorage
+  const getBookedSlotsForDate = (dateStr: string): { slot: string; duration: string }[] => {
     if (!dateStr) return [];
+    
+    const bookedList: { slot: string; duration: string }[] = [];
     
     // Check if the overall date status is booked from our availability dataset
     const dateAvail = availability[dateStr];
     if (dateAvail && (dateAvail.status === 'booked' || dateAvail.available_slots === 0)) {
-      return [...timeSlots]; // All slots booked
+      timeSlots.forEach(slot => bookedList.push({ slot, duration: '30 Minutes' }));
+      return bookedList;
     }
     
     // Simple deterministic hash based on date string
@@ -1394,17 +1429,38 @@ function BookingModal({ onClose }: BookingModalProps) {
       hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
     }
     
-    const booked: string[] = [];
     // Deterministically book 1 to 5 slots
     const numBooked = Math.abs(hash % 5) + 1; 
     for (let i = 0; i < numBooked; i++) {
       const slotIndex = Math.abs((hash + i * 17) % timeSlots.length);
       const slot = timeSlots[slotIndex];
-      if (!booked.includes(slot) && slot !== '06:30 PM' && slot !== '07:00 PM') {
-        booked.push(slot);
+      if (slot !== '06:30 PM' && slot !== '07:00 PM') {
+        if (!bookedList.some(b => b.slot === slot)) {
+          bookedList.push({ slot, duration: '30 Minutes' });
+        }
       }
     }
-    return booked;
+
+    // Combine with actual bookings stored in localStorage
+    try {
+      const storedBookingsRaw = localStorage.getItem('llw_booked_slots');
+      if (storedBookingsRaw) {
+        const storedBookings = JSON.parse(storedBookingsRaw);
+        const dateBookings = storedBookings[dateStr] || [];
+        dateBookings.forEach((item: any) => {
+          const bookingObj = typeof item === 'string' 
+            ? { slot: item, duration: '30 Minutes' } 
+            : item;
+          if (!bookedList.some(b => b.slot === bookingObj.slot)) {
+            bookedList.push(bookingObj);
+          }
+        });
+      }
+    } catch (err) {
+      console.error('Error reading local bookings:', err);
+    }
+
+    return bookedList;
   };
 
   // Check if a time slot has already passed for today
@@ -1436,9 +1492,12 @@ function BookingModal({ onClose }: BookingModalProps) {
   const bookedTimes = date ? getBookedSlotsForDate(date) : [];
   const availableSlots = timeSlots.filter(slot => {
     if (slot === '12:00 PM' || slot === '12:30 PM') return false; // Always block out 12:00 PM - 01:00 PM (lunch hour)
-    const isBooked = bookedTimes.includes(slot);
     const isPastTime = isTimeSlotInPast(slot, date);
-    return !isBooked && !isPastTime;
+    if (isPastTime) return false;
+    
+    // Check overlap with duration
+    const isOverlapping = isSlotOverlapping(slot, duration, bookedTimes);
+    return !isOverlapping;
   });
 
   // Reset selected time if it becomes unavailable when date changes
@@ -1484,6 +1543,18 @@ function BookingModal({ onClose }: BookingModalProps) {
       });
 
       if (response.ok) {
+        // Save booked slot and its duration to localStorage so it is blocked immediately for this client/browser
+        try {
+          const storedBookingsRaw = localStorage.getItem('llw_booked_slots') || '{}';
+          const storedBookings = JSON.parse(storedBookingsRaw);
+          if (!storedBookings[date]) {
+            storedBookings[date] = [];
+          }
+          storedBookings[date].push({ slot: timeSlot, duration: duration });
+          localStorage.setItem('llw_booked_slots', JSON.stringify(storedBookings));
+        } catch (err) {
+          console.error('Error saving local booking:', err);
+        }
         setStep(2);
       } else {
         throw new Error('Form submission failed.');
