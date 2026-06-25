@@ -19,7 +19,6 @@ import {
   Trash2,
   Clock,
   CheckCircle,
-  AlertCircle,
   Lock,
   Sliders,
   Coffee,
@@ -1300,6 +1299,9 @@ function BookingModal({ onClose }: BookingModalProps) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [passcodeInput, setPasscodeInput] = useState('');
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [loginError, setLoginError] = useState('');
 
   const [parentName, setParentName] = useState('');
   const [childName, setChildName] = useState('');
@@ -1682,12 +1684,6 @@ function BookingModal({ onClose }: BookingModalProps) {
         {viewMode === 'parent' ? (
           step === 1 ? (
             <div className="p-6 sm:p-8 max-h-[75vh] overflow-y-auto">
-              <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 mb-6 flex items-start gap-3">
-                <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18} />
-                <div className="text-xs text-amber-800">
-                  <strong className="font-semibold">Solo Practitioner Protection Active:</strong> Because this clinic is operated by <strong className="font-semibold">one practitioner</strong>, booking a 60-minute session will automatically lock the selected interval as well as the immediate subsequent 30-minute interval, ensuring no scheduling conflicts can ever occur.
-                </div>
-              </div>
 
               {error && (
                 <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-xs border border-red-100">
@@ -1922,10 +1918,56 @@ function BookingModal({ onClose }: BookingModalProps) {
             </div>
           )
         ) : (
-          /* =========================================
-             ADMIN VIEW (SOLO THERAPIST DASHBOARD)
-             ========================================= */
-          <div className="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-h-[75vh] overflow-y-auto">
+          !isAdminLoggedIn ? (
+            /* Beautiful Passcode Login View */
+            <div className="p-12 max-w-sm mx-auto text-center flex flex-col items-center justify-center space-y-6">
+              <div className="bg-rose-50 p-4 rounded-full text-rose-500">
+                <Lock size={32} />
+              </div>
+              <h3 className="text-xl font-serif text-gray-900">Owner Authorization</h3>
+              <p className="text-xs text-gray-500 leading-relaxed">This area is restricted to wellness center staff. Please enter your passcode to continue.</p>
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (passcodeInput === '1234' || passcodeInput === 'lotus2026') {
+                    setIsAdminLoggedIn(true);
+                    setLoginError('');
+                    setPasscodeInput('');
+                  } else {
+                    setLoginError('Incorrect passcode. Please try again.');
+                  }
+                }} 
+                className="w-full space-y-4"
+              >
+                <input 
+                  type="password"
+                  placeholder="Enter Passcode (Default: 1234)"
+                  value={passcodeInput}
+                  onChange={(e) => setPasscodeInput(e.target.value)}
+                  className="w-full text-center tracking-widest border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800 text-sm font-semibold"
+                />
+                {loginError && (
+                  <p className="text-xs text-rose-500 font-medium">⚠️ {loginError}</p>
+                )}
+                <button
+                  type="submit"
+                  className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] text-white py-3 rounded-xl text-xs font-semibold shadow-sm transition-all"
+                >
+                  Authenticate
+                </button>
+              </form>
+              <button
+                onClick={() => setViewMode('parent')}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                Return to Booking Portal
+              </button>
+            </div>
+          ) : (
+            /* =========================================
+               ADMIN VIEW (SOLO THERAPIST DASHBOARD)
+               ========================================= */
+            <div className="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-h-[75vh] overflow-y-auto">
             {/* Left Column: Timeline Schedule List */}
             <div className="lg:col-span-8 space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -2054,6 +2096,7 @@ function BookingModal({ onClose }: BookingModalProps) {
               </div>
             </div>
           </div>
+          )
         )}
       </div>
     </div>
