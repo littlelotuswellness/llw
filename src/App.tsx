@@ -1673,7 +1673,7 @@ function BookingModal({ onClose }: BookingModalProps) {
             </div>
             <div>
               <h1 className="text-lg font-serif font-semibold text-[#6b8e7a] leading-none">Little Lotus Wellness</h1>
-              <p className="text-[10px] text-rose-400 font-medium uppercase tracking-widest mt-1">Solo-Therapist Safe Booking System</p>
+              <p className="text-[10px] text-rose-400 font-medium uppercase tracking-widest mt-1">Therapist Safe Booking System</p>
             </div>
           </div>
 
@@ -1974,7 +1974,7 @@ function BookingModal({ onClose }: BookingModalProps) {
             </div>
           ) : (
             /* =========================================
-               ADMIN VIEW (SOLO THERAPIST DASHBOARD)
+               ADMIN VIEW (THERAPIST DASHBOARD)
                ========================================= */
             <div className="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-h-[75vh] overflow-y-auto">
             {/* Left Column: Timeline Schedule List */}
