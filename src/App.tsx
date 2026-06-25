@@ -1158,6 +1158,14 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
     {
       q: "How do I prepare for my child’s first visit?",
       a: "When booking, you will complete a pre-appointment intake form. This allows us to understand your child’s developmental stage, sensory needs, and specific wellness goals, ensuring we can provide a truly individualized treatment session."
+    },
+    {
+      q: "When should I arrive for my appointment?",
+      a: "Please arrive at least 15 minutes before your scheduled appointment. This allows enough time to complete any necessary paperwork and ensures your session begins on time."
+    },
+    {
+      q: "What is your cancellation policy?",
+      a: "Appointments canceled within 48 hours of the scheduled appointment time will incur a 100% cancellation fee."
     }
   ];
 
