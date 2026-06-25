@@ -1929,7 +1929,7 @@ function BookingModal({ onClose }: BookingModalProps) {
               <form 
                 onSubmit={(e) => {
                   e.preventDefault();
-                  if (passcodeInput === '1234' || passcodeInput === 'lotus2026') {
+                  if (passcodeInput === '2026') {
                     setIsAdminLoggedIn(true);
                     setLoginError('');
                     setPasscodeInput('');
@@ -1941,7 +1941,7 @@ function BookingModal({ onClose }: BookingModalProps) {
               >
                 <input 
                   type="password"
-                  placeholder="Enter Passcode (Default: 1234)"
+                  placeholder="Enter Passcode"
                   value={passcodeInput}
                   onChange={(e) => setPasscodeInput(e.target.value)}
                   className="w-full text-center tracking-widest border border-gray-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800 text-sm font-semibold"
