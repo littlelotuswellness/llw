@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Heart, 
   Leaf, 
@@ -17,7 +17,14 @@ import {
   Plus,
   Minus,
   Trash2,
-  Clock
+  Clock,
+  CheckCircle,
+  AlertCircle,
+  Lock,
+  Sliders,
+  Coffee,
+  DollarSign,
+  Briefcase
 } from 'lucide-react';
 
 interface Product {
@@ -287,7 +294,7 @@ export default function App() {
                 <div>
                   <p className="font-semibold text-white">Trading Hours:</p>
                   <p>Tuesday – Saturday, 11:00 AM – 07:00 PM</p>
-                  <p className="text-xs text-pink-400 font-bold">(Closed Sunday & Monday)</p>
+                  <p className="text-xs text-red-800 font-bold bg-pink-100 px-2 py-0.5 rounded inline-block mt-1">(Closed Sunday & Monday)</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -1216,13 +1223,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
           })}
         </div>
 
-        {/* Trading Hours Alert Banner above location box */}
-        <div className="mt-16 bg-[#6b8e7a]/5 border border-[#6b8e7a]/20 rounded-2xl p-4 flex items-center justify-center gap-3 text-center">
-          <Clock className="text-[#6b8e7a]" size={20} />
-          <span className="text-sm text-[#5a7a68] font-medium">
-            <strong>Trading Hours:</strong> Tuesday – Saturday, 11:00 AM – 07:00 PM (Closed Sunday & Monday)
-          </span>
-        </div>
+
 
         {/* Location Box embedded in FAQ/Contact area */}
         <div className="mt-6 bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 flex flex-col md:flex-row">
@@ -1234,7 +1235,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
                 <div>
                   <span className="font-semibold block text-gray-900 text-sm">Trading Hours</span>
                   <span className="text-sm">Tuesday – Saturday: 11:00 AM – 07:00 PM</span>
-                  <span className="text-xs text-pink-650 block mt-0.5 font-bold text-pink-600">(Closed Sunday & Monday)</span>
+                  <span className="text-xs text-red-800 bg-pink-100 px-2 py-0.5 rounded inline-block mt-1.5 font-bold">(Closed Sunday & Monday)</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
@@ -1294,180 +1295,122 @@ interface BookingModalProps {
 }
 
 function BookingModal({ onClose }: BookingModalProps) {
+  const [viewMode, setViewMode] = useState<'parent' | 'admin'>('parent');
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
   const [parentName, setParentName] = useState('');
+  const [childName, setChildName] = useState('');
   const [childAge, setChildAge] = useState('');
   const [email, setEmail] = useState('');
-  const [service, setService] = useState('Pediatric Massage');
-  const [duration, setDuration] = useState('30 Minutes');
-  const [date, setDate] = useState('');
+  const [service, setService] = useState('Pediatric Massage Session (Standard)');
+  const [duration, setDuration] = useState(60); // 30 or 60
+  const [selectedDate, setSelectedDate] = useState(() => {
+    // Find tomorrow's date or next valid day
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    return tomorrow.toISOString().split('T')[0];
+  });
   const [timeSlot, setTimeSlot] = useState('');
   const [notes, setNotes] = useState('');
-
+  
   const [currentMonth, setCurrentMonth] = useState(new Date());
-  const [availability, setAvailability] = useState<Record<string, { status: string; available_slots: number }>>({});
 
-  const timeSlots = [
-    '11:00 AM',
-    '11:30 AM',
-    '12:00 PM',
-    '12:30 PM',
-    '01:00 PM',
-    '01:30 PM',
-    '02:00 PM',
-    '02:30 PM',
-    '03:00 PM',
-    '03:30 PM',
-    '04:00 PM',
-    '04:30 PM',
-    '05:00 PM',
-    '05:30 PM',
-    '06:00 PM',
-    '06:30 PM'
+  const TIME_BLOCKS = [
+    "11:00 AM", "11:30 AM", "12:00 PM", "12:30 PM", 
+    "01:00 PM", "01:30 PM", "02:00 PM", "02:30 PM", 
+    "03:00 PM", "03:30 PM", "04:00 PM", "04:30 PM", 
+    "05:00 PM", "05:30 PM", "06:00 PM", "06:30 PM"
   ];
 
-  // Fetch date availability on mount
-  useEffect(() => {
-    const fetchAvailability = async () => {
+  // Initialize appointments from localStorage or fall back to mock list
+  const [appointments, setAppointments] = useState<any[]>(() => {
+    const saved = localStorage.getItem('llw_appointments');
+    if (saved) {
       try {
-        const response = await fetch('/api/availability');
-        if (response.ok) {
-          const data = await response.json();
-          const map: Record<string, { status: string; available_slots: number }> = {};
-          data.forEach((item: any) => {
-            map[item.date] = { status: item.status, available_slots: item.available_slots };
-          });
-          setAvailability(map);
-        } else {
-          throw new Error('API response error');
-        }
-      } catch (err) {
-        console.warn('Backend API availability not found, utilizing local deterministic simulation.');
-        // Fallback simulation for 60 days
-        const mockMap: Record<string, { status: string; available_slots: number }> = {};
-        for (let i = 0; i < 60; i++) {
-          const d = new Date();
-          d.setDate(d.getDate() + i);
-          const dateStr = d.toISOString().split('T')[0];
-          
-          let hash = 0;
-          for (let j = 0; j < dateStr.length; j++) {
-            hash = dateStr.charCodeAt(j) + ((hash << 5) - hash);
-          }
-          // Deterministic booked date: ~14% chance of being fully booked
-          const isBooked = Math.abs(hash % 7) === 0;
-          mockMap[dateStr] = {
-            status: isBooked ? 'booked' : 'available',
-            available_slots: isBooked ? 0 : Math.abs(hash % 5) + 1
-          };
-        }
-        setAvailability(mockMap);
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error(e);
       }
-    };
-    fetchAvailability();
-  }, []);
+    }
+    return [
+      {
+        id: "1",
+        date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
+        time: "11:30 AM",
+        duration: 60,
+        parentName: "Sarah Miller",
+        childName: "Tommy",
+        childAge: "8",
+        email: "sarah@example.com",
+        service: "Athletic Recovery & Performance",
+        notes: "Prefers soft lighting",
+        status: "booked"
+      },
+      {
+        id: "2",
+        date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
+        time: "03:00 PM",
+        duration: 30,
+        parentName: "David Jenkins",
+        childName: "Lily",
+        childAge: "6",
+        email: "david@example.com",
+        service: "Sensory Support Session",
+        notes: "",
+        status: "booked"
+      },
+      {
+        id: "3",
+        date: new Date(Date.now() + 86400000).toISOString().split('T')[0], // tomorrow
+        time: "05:30 PM",
+        duration: 60,
+        parentName: "Emily Watson",
+        childName: "Leo",
+        childAge: "10",
+        email: "emily@example.com",
+        service: "Pediatric Massage Session (Standard)",
+        notes: "",
+        status: "booked"
+      }
+    ];
+  });
 
-  // Helper to format HTML date string (YYYY-MM-DD) to MM/DD/YYYY
+  useEffect(() => {
+    localStorage.setItem('llw_appointments', JSON.stringify(appointments));
+  }, [appointments]);
+
+  // Compute occupied block indices for the selected date
+  const occupiedIndexes = useMemo(() => {
+    const list: number[] = [];
+    appointments
+      .filter(app => app.date === selectedDate)
+      .forEach(app => {
+        const startIndex = TIME_BLOCKS.indexOf(app.time);
+        if (startIndex === -1) return;
+        // Occupy duration + 15 min buffer
+        const blocksNeeded = Math.ceil((app.duration + 15) / 30);
+        for (let i = 0; i < blocksNeeded; i++) {
+          if (startIndex + i < TIME_BLOCKS.length) {
+            list.push(startIndex + i);
+          }
+        }
+      });
+    return list;
+  }, [appointments, selectedDate]);
+
+  // Helper to format YYYY-MM-DD to MM/DD/YYYY
   const formatDateToMMDDYYYY = (dateStr: string) => {
     if (!dateStr) return '';
     const [year, month, day] = dateStr.split('-');
     return `${month}/${day}/${year}`;
   };
 
-  const getSlotMinutes = (slot: string): number => {
-    const [time, modifier] = slot.split(' ');
-    const [hoursStr, minutesStr] = time.split(':');
-    let hours = parseInt(hoursStr, 10);
-    const minutes = parseInt(minutesStr, 10);
-    if (modifier === 'PM' && hours < 12) hours += 12;
-    if (modifier === 'AM' && hours === 12) hours = 0;
-    return hours * 60 + minutes;
-  };
-
-  const isSlotOverlapping = (candidateSlot: string, candidateDuration: string, bookedList: { slot: string; duration: string }[]): boolean => {
-    const serviceMinutes = candidateDuration.includes('60') || candidateDuration.includes('1 Hour') ? 60 : 30;
-    const candidateStart = getSlotMinutes(candidateSlot);
-    const candidateEnd = candidateStart + serviceMinutes + 15; // 15 mins Buffer
-    
-    // 1. Cut-off time check: service must end by 07:00 PM (1140 minutes)
-    if (candidateStart + serviceMinutes > 19 * 60) {
-      return true;
-    }
-
-    // 2. Check overlap with booked slots (with their buffer times)
-    for (const booking of bookedList) {
-      const bookedServiceMinutes = booking.duration.includes('60') || booking.duration.includes('1 Hour') ? 60 : 30;
-      const bookedStart = getSlotMinutes(booking.slot);
-      const bookedEnd = bookedStart + bookedServiceMinutes + 15; // 15 mins Buffer
-      
-      // Overlap check
-      if (candidateStart < bookedEnd && candidateEnd > bookedStart) {
-        return true;
-      }
-    }
-    return false;
-  };
-
-  // Deterministic generator of booked slots based on the selected date combined with localStorage
-  const getBookedSlotsForDate = (dateStr: string): { slot: string; duration: string }[] => {
-    if (!dateStr) return [];
-    
-    const bookedList: { slot: string; duration: string }[] = [];
-    
-    // Check if the overall date status is booked from our availability dataset
-    const dateAvail = availability[dateStr];
-    if (dateAvail && (dateAvail.status === 'booked' || dateAvail.available_slots === 0)) {
-      timeSlots.forEach(slot => bookedList.push({ slot, duration: '30 Minutes' }));
-      return bookedList;
-    }
-    
-    // Simple deterministic hash based on date string
-    let hash = 0;
-    for (let i = 0; i < dateStr.length; i++) {
-      hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
-    }
-    
-    // Deterministically book 1 to 5 slots
-    const numBooked = Math.abs(hash % 5) + 1; 
-    for (let i = 0; i < numBooked; i++) {
-      const slotIndex = Math.abs((hash + i * 17) % timeSlots.length);
-      const slot = timeSlots[slotIndex];
-      if (slot !== '06:30 PM' && slot !== '07:00 PM') {
-        if (!bookedList.some(b => b.slot === slot)) {
-          bookedList.push({ slot, duration: '30 Minutes' });
-        }
-      }
-    }
-
-    // Combine with actual bookings stored in localStorage
-    try {
-      const storedBookingsRaw = localStorage.getItem('llw_booked_slots');
-      if (storedBookingsRaw) {
-        const storedBookings = JSON.parse(storedBookingsRaw);
-        const dateBookings = storedBookings[dateStr] || [];
-        dateBookings.forEach((item: any) => {
-          const bookingObj = typeof item === 'string' 
-            ? { slot: item, duration: '30 Minutes' } 
-            : item;
-          if (!bookedList.some(b => b.slot === bookingObj.slot)) {
-            bookedList.push(bookingObj);
-          }
-        });
-      }
-    } catch (err) {
-      console.error('Error reading local bookings:', err);
-    }
-
-    return bookedList;
-  };
-
   // Check if a time slot has already passed for today
   const isTimeSlotInPast = (slot: string, dateStr: string): boolean => {
     const todayStr = new Date().toISOString().split('T')[0];
-    if (dateStr !== todayStr) return false; // Only check for today
+    if (dateStr !== todayStr) return false;
     
     const now = new Date();
     const currentHours = now.getHours();
@@ -1478,38 +1421,71 @@ function BookingModal({ onClose }: BookingModalProps) {
     let hours = parseInt(hoursStr, 10);
     const minutes = parseInt(minutesStr, 10);
     
-    if (modifier === 'PM' && hours < 12) {
-      hours += 12;
-    }
-    if (modifier === 'AM' && hours === 12) {
-      hours = 0;
-    }
+    if (modifier === 'PM' && hours < 12) hours += 12;
+    if (modifier === 'AM' && hours === 12) hours = 0;
     
     if (hours < currentHours) return true;
     if (hours === currentHours && minutes <= currentMinutes) return true;
     return false;
   };
 
-  const bookedTimes = date ? getBookedSlotsForDate(date) : [];
-  const availableSlots = timeSlots.filter(slot => {
-    if (slot === '12:00 PM' || slot === '12:30 PM') return false; // Always block out 12:00 PM - 01:00 PM (lunch hour)
-    const isPastTime = isTimeSlotInPast(slot, date);
-    if (isPastTime) return false;
-    
-    // Check overlap with duration
-    const isOverlapping = isSlotOverlapping(slot, duration, bookedTimes);
-    return !isOverlapping;
-  });
+  // Get the end time of an appointment slot
+  const getEndTime = (startTimeStr: string, durationMins: number) => {
+    const idx = TIME_BLOCKS.indexOf(startTimeStr);
+    if (idx === -1) return "";
+    const endIdx = idx + (durationMins / 30);
+    if (endIdx < TIME_BLOCKS.length) {
+      return TIME_BLOCKS[endIdx];
+    } else if (endIdx === TIME_BLOCKS.length) {
+      return "07:00 PM";
+    }
+    return "After Hours";
+  };
 
-  // Reset selected time if it becomes unavailable when date changes
+  // Slot availability verification
+  const checkSlotAvailability = (timeStr: string, durationMins: number) => {
+    const startIndex = TIME_BLOCKS.indexOf(timeStr);
+    if (startIndex === -1) return { available: false, reason: "Invalid slot" };
+
+    const serviceBlocks = durationMins / 30;
+
+    // 1. Boundary check: closing time at 07:00 PM
+    if (startIndex + serviceBlocks > TIME_BLOCKS.length) {
+      return { available: false, reason: "Exceeds closing hours (7:00 PM)" };
+    }
+
+    // 2. Lunch Break check: 12:00 PM - 01:00 PM (indices 2 and 3)
+    for (let i = 0; i < serviceBlocks; i++) {
+      const currentIdx = startIndex + i;
+      if (currentIdx === 2 || currentIdx === 3) {
+        return { available: false, reason: "Lunch Break (12 PM - 1 PM)" };
+      }
+    }
+
+    // 3. Collision check with booked blocks + buffer
+    const totalBlocksToCheck = Math.ceil((durationMins + 15) / 30);
+    for (let i = 0; i < totalBlocksToCheck; i++) {
+      if (occupiedIndexes.includes(startIndex + i)) {
+        return { available: false, reason: "Another session is scheduled" };
+      }
+    }
+
+    // 4. Past check
+    if (isTimeSlotInPast(timeStr, selectedDate)) {
+      return { available: false, reason: "Time has passed" };
+    }
+
+    return { available: true };
+  };
+
   const handleDateChange = (newDate: string) => {
-    setDate(newDate);
-    setTimeSlot(''); // Reset time selection on date change
+    setSelectedDate(newDate);
+    setTimeSlot('');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!date) {
+    if (!selectedDate) {
       setError('Please select a date.');
       return;
     }
@@ -1520,7 +1496,7 @@ function BookingModal({ onClose }: BookingModalProps) {
     setError('');
     setIsSubmitting(true);
 
-    const formattedDate = formatDateToMMDDYYYY(date);
+    const formattedDate = formatDateToMMDDYYYY(selectedDate);
 
     try {
       const response = await fetch('https://formsubmit.co/ajax/littlelotuswellness@proton.me', {
@@ -1530,32 +1506,35 @@ function BookingModal({ onClose }: BookingModalProps) {
           'Accept': 'application/json'
         },
         body: JSON.stringify({
-          'email': email, // Required by FormSubmit for autoresponse
+          'email': email,
           'Parent Name': parentName,
+          'Child Name': childName,
           'Child Age': childAge,
           'Service Needed': service,
-          'Session Duration': duration,
+          'Session Duration': `${duration} Minutes`,
           'Preferred Date (MM/DD/YYYY)': formattedDate,
           'Preferred Time': timeSlot,
           'Notes / Sensory Needs': notes,
           '_subject': 'Appointment Request Confirmed - Little Lotus Wellness 🪷',
-          '_autoresponse': `Hi ${parentName},\n\nThank you for requesting an appointment with Little Lotus Wellness! We have received your request and will contact you shortly to confirm your booking.\n\nHere are your request details:\n- Service: ${service} (${duration})\n- Date: ${formattedDate}\n- Time Slot: ${timeSlot}\n\nSincerely,\nLittle Lotus Wellness\nMarietta, GA`
+          '_autoresponse': `Hi ${parentName},\n\nThank you for requesting an appointment with Little Lotus Wellness! We have received your request and will contact you shortly to confirm your booking.\n\nHere are your request details:\n- Service: ${service} (${duration} Minutes)\n- Date: ${formattedDate}\n- Time Slot: ${timeSlot}\n\nSincerely,\nLittle Lotus Wellness\nMarietta, GA`
         })
       });
 
       if (response.ok) {
-        // Save booked slot and its duration to localStorage so it is blocked immediately for this client/browser
-        try {
-          const storedBookingsRaw = localStorage.getItem('llw_booked_slots') || '{}';
-          const storedBookings = JSON.parse(storedBookingsRaw);
-          if (!storedBookings[date]) {
-            storedBookings[date] = [];
-          }
-          storedBookings[date].push({ slot: timeSlot, duration: duration });
-          localStorage.setItem('llw_booked_slots', JSON.stringify(storedBookings));
-        } catch (err) {
-          console.error('Error saving local booking:', err);
-        }
+        const newApp = {
+          id: Date.now().toString(),
+          date: selectedDate,
+          time: timeSlot,
+          duration: duration,
+          parentName: parentName || "Anonymous Parent",
+          childName: childName || "Child Name",
+          childAge: childAge || "N/A",
+          email: email,
+          service: service,
+          notes: notes,
+          status: "booked"
+        };
+        setAppointments(prev => [...prev, newApp]);
         setStep(2);
       } else {
         throw new Error('Form submission failed.');
@@ -1568,6 +1547,10 @@ function BookingModal({ onClose }: BookingModalProps) {
     }
   };
 
+  const handleDeleteAppointment = (id: string) => {
+    setAppointments(prev => prev.filter(app => app.id !== id));
+  };
+
   // Render Calendar Grid layout
   const renderCalendar = () => {
     const year = currentMonth.getFullYear();
@@ -1577,7 +1560,6 @@ function BookingModal({ onClose }: BookingModalProps) {
     const totalDays = new Date(year, month + 1, 0).getDate();
     
     const days = [];
-    // Padding
     for (let i = 0; i < firstDay; i++) {
       days.push(<div key={`empty-${i}`} className="h-8 w-8" />);
     }
@@ -1598,14 +1580,12 @@ function BookingModal({ onClose }: BookingModalProps) {
       const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
       
       const dayOfWeek = d.getDay();
-      const isClosed = dayOfWeek === 0 || dayOfWeek === 1; // Closed on Sunday (0) and Monday (1)
+      const isClosed = dayOfWeek === 0 || dayOfWeek === 1; // Closed on Sunday and Monday
       const isPast = d < todayMidnight;
-      const dayAvail = availability[dateStr];
-      const isBooked = dayAvail ? (dayAvail.status === 'booked' || dayAvail.available_slots === 0) : false;
-      const isSelected = date === dateStr;
+      const isSelected = selectedDate === dateStr;
       
       let btnClass = "h-8 w-8 rounded-full text-xs flex items-center justify-center transition-all ";
-      let isDisabled = isPast || isBooked || isClosed;
+      let isDisabled = isPast || isClosed;
       
       if (isSelected) {
         btnClass += "bg-[#6b8e7a] text-white font-semibold shadow-sm";
@@ -1622,7 +1602,7 @@ function BookingModal({ onClose }: BookingModalProps) {
           disabled={isDisabled}
           onClick={() => handleDateChange(dateStr)}
           className={btnClass}
-          title={isClosed ? "Closed" : isBooked ? "Fully Booked" : ""}
+          title={isClosed ? "Closed" : ""}
         >
           {day}
         </button>
@@ -1659,7 +1639,7 @@ function BookingModal({ onClose }: BookingModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/45 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center px-4 bg-black/45 backdrop-blur-sm animate-in fade-in duration-200 overflow-y-auto py-8">
       {/* Window Close Button */}
       <button 
         onClick={onClose}
@@ -1669,168 +1649,409 @@ function BookingModal({ onClose }: BookingModalProps) {
         <X size={24} />
       </button>
 
-      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden relative">
-        {step === 1 ? (
-          <div className="p-8 max-h-[90vh] overflow-y-auto">
-            <h2 className="text-2xl font-serif text-[#6b8e7a] mb-2">Request an Appointment</h2>
-            <p className="text-gray-500 text-sm mb-4">Please fill out this brief pre-appointment intake form so we can individualize your child's session.</p>
-            
-            <div className="mb-6 p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs border border-emerald-100 flex items-center gap-2">
-              <Clock size={14} className="text-[#6b8e7a]" />
-              <span><strong>Trading Hours:</strong> Tuesday – Saturday, 11:00 AM – 07:00 PM (Closed Sunday & Monday)</span>
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden relative flex flex-col my-auto">
+        {/* Brand Header */}
+        <header className="bg-white border-b border-rose-100 py-5 px-6 shadow-sm flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="flex items-center gap-3">
+            <div className="bg-rose-100 p-2 rounded-full text-rose-500">
+              <Flower2 size={24} />
             </div>
-            
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
-                ⚠️ {error}
-              </div>
-            )}
+            <div>
+              <h1 className="text-lg font-serif font-semibold text-[#6b8e7a] leading-none">Little Lotus Wellness</h1>
+              <p className="text-[10px] text-rose-400 font-medium uppercase tracking-widest mt-1">Solo-Therapist Safe Booking System</p>
+            </div>
+          </div>
 
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Parent's Name</label>
-                  <input 
-                    required 
-                    type="text" 
-                    value={parentName}
-                    onChange={(e) => setParentName(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Child's Age</label>
-                  <input 
-                    required 
-                    type="number" 
-                    min="0" 
-                    max="18" 
-                    value={childAge}
-                    onChange={(e) => setChildAge(e.target.value)}
-                    className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
-                  />
+          <div className="bg-emerald-50/80 p-1 rounded-full border border-emerald-100/50 flex gap-1">
+            <button 
+              onClick={() => { setViewMode('parent'); setStep(1); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all ${viewMode === 'parent' ? 'bg-[#6b8e7a] text-white shadow-sm' : 'text-[#5a7a68] hover:bg-emerald-100/40'}`}
+            >
+              👩👦 Parent Booking Portal
+            </button>
+            <button 
+              onClick={() => setViewMode('admin')}
+              className={`px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide transition-all ${viewMode === 'admin' ? 'bg-[#6b8e7a] text-white shadow-sm' : 'text-[#5a7a68] hover:bg-emerald-100/40'}`}
+            >
+              ⚙️ Owner Dashboard (Admin)
+            </button>
+          </div>
+        </header>
+
+        {viewMode === 'parent' ? (
+          step === 1 ? (
+            <div className="p-6 sm:p-8 max-h-[75vh] overflow-y-auto">
+              <div className="bg-amber-50/50 border border-amber-100 rounded-2xl p-4 mb-6 flex items-start gap-3">
+                <AlertCircle className="text-amber-500 shrink-0 mt-0.5" size={18} />
+                <div className="text-xs text-amber-800">
+                  <strong className="font-semibold">Solo Practitioner Protection Active:</strong> Because this clinic is operated by <strong className="font-semibold">one practitioner</strong>, booking a 60-minute session will automatically lock the selected interval as well as the immediate subsequent 30-minute interval, ensuring no scheduling conflicts can ever occur.
                 </div>
               </div>
-              
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Contact Email</label>
+
+              {error && (
+                <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-xs border border-red-100">
+                  ⚠️ {error}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                {/* Left Column: Form Details */}
+                <div className="lg:col-span-7 space-y-5">
+                  <form onSubmit={handleSubmit} className="space-y-4">
+                    {/* 1. Duration Choice */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">1. Select Session Duration</label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          onClick={() => { setDuration(30); setTimeSlot(""); }}
+                          className={`py-3.5 px-4 rounded-xl border-2 text-center transition-all flex flex-col items-center justify-center gap-0.5 ${duration === 30 ? 'border-[#6b8e7a] bg-emerald-50/30 text-[#5a7a68]' : 'border-gray-100 hover:border-gray-200 text-gray-600 bg-white'}`}
+                        >
+                          <span className="font-bold text-base">30 Minutes</span>
+                          <span className="text-[10px] text-gray-400">Introductory treatment</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setDuration(60); setTimeSlot(""); }}
+                          className={`py-3.5 px-4 rounded-xl border-2 text-center transition-all flex flex-col items-center justify-center gap-0.5 ${duration === 60 ? 'border-[#6b8e7a] bg-emerald-50/30 text-[#5a7a68]' : 'border-gray-100 hover:border-gray-200 text-gray-600 bg-white'}`}
+                        >
+                          <span className="font-bold text-base">60 Minutes</span>
+                          <span className="text-[10px] text-gray-400">Full therapeutic care</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 2. Specialized Care Selection */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1.5">2. Choose Treatment Package</label>
+                      <select 
+                        value={service}
+                        onChange={(e) => setService(e.target.value)}
+                        className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none shadow-sm cursor-pointer text-gray-700"
+                      >
+                        <option>Pediatric Massage Session (Standard - $85/60 min)</option>
+                        <option>Express Glow Facial</option>
+                        <option>Lymphatic Massage</option>
+                        <option>Athletic Recovery & Performance (For young athletes)</option>
+                        <option>Calm & Centered (Anxiety & school stress relief)</option>
+                        <option>Sensory Support Session (Hypersensitive & sensory needs)</option>
+                      </select>
+                    </div>
+
+                    {/* 3. Basic Intake Information */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Parent's Name</label>
+                        <input 
+                          required
+                          type="text" 
+                          placeholder="e.g. Sarah Miller" 
+                          value={parentName}
+                          onChange={(e) => setParentName(e.target.value)}
+                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Contact Email</label>
+                        <input 
+                          required
+                          type="email" 
+                          placeholder="e.g. sarah@example.com" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Child's Name</label>
+                        <input 
+                          required
+                          type="text" 
+                          placeholder="Tommy" 
+                          value={childName}
+                          onChange={(e) => setChildName(e.target.value)}
+                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-700 mb-1">Child's Age</label>
+                        <input 
+                          required
+                          type="number" 
+                          min="0"
+                          max="18"
+                          placeholder="8" 
+                          value={childAge}
+                          onChange={(e) => setChildAge(e.target.value)}
+                          className="w-full bg-white border border-gray-200 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Date selection component */}
+                    <div>
+                      <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">3. Select Appointment Date</label>
+                      {renderCalendar()}
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1">Special Wellness Needs or Sensory Notes</label>
+                      <textarea 
+                        rows={2} 
+                        value={notes}
+                        onChange={(e) => setNotes(e.target.value)}
+                        placeholder="Any sensory details, light preferences, etc..."
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none resize-none bg-white text-gray-800 text-sm"
+                      ></textarea>
+                    </div>
+
+                    {/* Submit Actions */}
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={!timeSlot || isSubmitting}
+                        className={`w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide transition-all flex items-center justify-center gap-2 shadow ${timeSlot ? 'bg-[#6b8e7a] hover:bg-[#5a7a68] text-white cursor-pointer' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Submitting...
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle size={18} />
+                            {timeSlot ? `Book Session: ${timeSlot} - ${getEndTime(timeSlot, duration)}` : 'Select an Available Time Slot'}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
+
+                {/* Right Column: Time Grid */}
+                <div className="lg:col-span-5 bg-[#faf9f7] p-5 rounded-2xl border border-gray-100 flex flex-col h-full justify-between">
+                  <div>
+                    <div className="flex justify-between items-center mb-4">
+                      <h3 className="font-serif font-medium text-gray-900 text-base flex items-center gap-2">
+                        <Clock className="text-rose-400" size={18} />
+                        Available Slots
+                      </h3>
+                      <span className="text-[9px] text-[#6b8e7a] font-bold bg-emerald-50 px-2 py-0.5 rounded-full uppercase tracking-wider">
+                        11 AM - 7 PM
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {TIME_BLOCKS.map((timeStr) => {
+                        const status = checkSlotAvailability(timeStr, duration);
+                        const isSelected = timeSlot === timeStr;
+                        
+                        return (
+                          <button
+                            key={timeStr}
+                            type="button"
+                            disabled={!status.available}
+                            onClick={() => setTimeSlot(timeStr)}
+                            className={`py-2.5 px-3 rounded-xl border text-left transition-all flex flex-col justify-between ${
+                              !status.available 
+                                ? 'bg-gray-50 border-gray-100 text-gray-300 cursor-not-allowed' 
+                                : isSelected
+                                  ? 'border-[#6b8e7a] bg-[#6b8e7a] text-white shadow-sm scale-[1.02]'
+                                  : 'border-gray-150 hover:border-emerald-250 text-gray-700 bg-white hover:bg-emerald-50/20'
+                            }`}
+                          >
+                            <div className="flex justify-between items-center w-full">
+                              <span className="text-xs font-bold">{timeStr}</span>
+                              {!status.available && (
+                                <span className="text-[9px] font-bold text-rose-300 flex items-center gap-0.5">
+                                  <Lock size={8} /> Occupied
+                                </span>
+                              )}
+                            </div>
+                            <span className={`text-[8px] mt-1 ${isSelected ? 'text-emerald-100' : 'text-gray-400'}`}>
+                              {status.available 
+                                ? `Until: ${getEndTime(timeStr, duration)}`
+                                : status.reason
+                              }
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="mt-6 pt-4 border-t border-gray-200/60 flex items-center justify-between text-[10px] text-gray-400">
+                    <div className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded bg-white border border-gray-200 inline-block"></span>
+                      <span>Available</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded bg-[#6b8e7a] inline-block"></span>
+                      <span>Selected</span>
+                    </div>
+                    <div className="flex items-center gap-1">
+                      <span className="w-2.5 h-2.5 rounded bg-gray-100 inline-block"></span>
+                      <span>Closed/Lunch</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="p-12 text-center flex flex-col items-center max-h-[75vh] overflow-y-auto">
+              <div className="w-14 h-14 bg-emerald-100 rounded-full flex items-center justify-center text-[#6b8e7a] mb-6">
+                <CheckCircle size={32} />
+              </div>
+              <h2 className="text-2xl font-serif text-gray-900 mb-2">Request Received!</h2>
+              <p className="text-gray-600 mb-8 max-w-md">
+                Thank you for choosing Little Lotus Wellness. Your request for **{formatDateToMMDDYYYY(selectedDate)}** at **{timeSlot}** has been sent to **littlelotuswellness@proton.me**. We will contact you shortly to confirm your appointment time.
+              </p>
+              <button 
+                onClick={onClose}
+                className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-8 py-3 rounded-full transition-colors"
+              >
+                Close Window
+              </button>
+            </div>
+          )
+        ) : (
+          /* =========================================
+             ADMIN VIEW (SOLO THERAPIST DASHBOARD)
+             ========================================= */
+          <div className="p-6 sm:p-8 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-h-[75vh] overflow-y-auto">
+            {/* Left Column: Timeline Schedule List */}
+            <div className="lg:col-span-8 space-y-4">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                  <h3 className="text-lg font-serif font-medium text-gray-900 flex items-center gap-2">
+                    <Sliders className="text-[#6b8e7a]" size={20} />
+                    Schedule Supervisor
+                  </h3>
+                  <p className="text-xs text-gray-500">Viewing itinerary for {formatDateToMMDDYYYY(selectedDate)}</p>
+                </div>
+                
                 <input 
-                  required 
-                  type="email" 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800" 
+                  type="date" 
+                  value={selectedDate}
+                  onChange={(e) => handleDateChange(e.target.value)}
+                  className="bg-gray-50 border border-gray-200 rounded-xl px-3 py-1.5 text-xs focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none cursor-pointer"
                 />
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Service Needed</label>
-                <select 
-                  value={service}
-                  onChange={(e) => setService(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800"
-                >
-                  <option>Pediatric Massage</option>
-                  <option>Express Glow Facial</option>
-                  <option>Lymphatic Massage</option>
-                </select>
-              </div>
+              {/* Time Block Stream */}
+              <div className="space-y-2">
+                {TIME_BLOCKS.map((timeStr) => {
+                  // Detect active sessions covering this slot
+                  const appFound = appointments.find(app => {
+                    if (app.date !== selectedDate) return false;
+                    const startIndex = TIME_BLOCKS.indexOf(app.time);
+                    const blocksNeeded = app.duration / 30;
+                    const currentIdx = TIME_BLOCKS.indexOf(timeStr);
+                    return currentIdx >= startIndex && currentIdx < startIndex + blocksNeeded;
+                  });
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Session Duration</label>
-                <select 
-                  value={duration}
-                  onChange={(e) => setDuration(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none bg-white text-gray-800"
-                >
-                  <option>30 Minutes</option>
-                  <option>60 Minutes (1 Hour)</option>
-                </select>
-              </div>
+                  const isStartBlock = appFound && appFound.time === timeStr;
+                  const isLunchBreak = timeStr === '12:00 PM' || timeStr === '12:30 PM';
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Select Date</label>
-                  {renderCalendar()}
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1 font-semibold">Available Times</label>
-                  {date ? (
-                    availableSlots.length > 0 ? (
-                      <div className="grid grid-cols-3 gap-1.5 animate-in fade-in duration-300">
-                        {availableSlots.map((slot) => (
-                          <button
-                            key={slot}
-                            type="button"
-                            onClick={() => {
-                              setTimeSlot(slot);
-                              if (error === 'Please select a preferred time slot.') setError('');
-                            }}
-                            className={`text-[10px] sm:text-xs py-2 px-1 rounded-lg border text-center transition-all ${
-                              timeSlot === slot
-                                ? 'bg-[#6b8e7a] border-[#6b8e7a] text-white font-medium'
-                                : 'border-gray-200 text-gray-600 hover:border-[#6b8e7a] hover:bg-rose-50'
-                            }`}
-                          >
-                            {slot}
-                          </button>
-                        ))}
+                  return (
+                    <div 
+                      key={timeStr} 
+                      className={`p-3 rounded-2xl flex items-center justify-between border transition-all ${
+                        isLunchBreak
+                          ? 'bg-rose-50/30 border-rose-100/40 text-rose-800'
+                          : appFound 
+                            ? isStartBlock 
+                              ? 'bg-emerald-50/40 border-emerald-100 shadow-sm' 
+                              : 'bg-emerald-50/10 border-dashed border-emerald-100/40'
+                            : 'bg-white border-gray-100 hover:border-gray-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-4">
+                        <span className="text-xs font-bold text-gray-400 w-16 shrink-0">{timeStr}</span>
+                        
+                        {isLunchBreak ? (
+                          <span className="text-xs text-rose-500 font-medium flex items-center gap-1.5 pl-4">
+                            <Coffee size={14} className="text-rose-400" /> Lunch Break block (Closed for client bookings)
+                          </span>
+                        ) : appFound ? (
+                          isStartBlock ? (
+                            <div className="flex items-center gap-3">
+                              <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+                              <div>
+                                <h4 className="text-xs font-bold text-[#5a7a68]">{appFound.childName} ({appFound.childAge} yrs)</h4>
+                                <p className="text-[10px] text-gray-500">
+                                  Parent: {appFound.parentName} • Care: <strong className="font-semibold text-[#6b8e7a]">{appFound.service}</strong>
+                                </p>
+                              </div>
+                            </div>
+                          ) : (
+                            <span className="text-[10px] text-[#6b8e7a]/70 italic flex items-center gap-1 pl-4">
+                              <Lock size={10} /> Double-lock buffer safety active for {appFound.childName}
+                            </span>
+                          )
+                        ) : (
+                          <span className="text-xs text-gray-400 flex items-center gap-1.5 pl-4">
+                            <Coffee size={14} className="text-gray-300" /> Free Interval
+                          </span>
+                        )}
                       </div>
-                    ) : (
-                      <div className="p-3 bg-red-50 text-red-600 border border-red-100 rounded-lg text-xs text-center font-medium animate-in slide-in-from-top-2 duration-300">
-                        ⚠️ Fully booked. Please select another date.
-                      </div>
-                    )
-                  ) : (
-                    <div className="text-xs text-gray-400 italic py-2 border border-dashed border-gray-200 rounded-lg text-center bg-gray-50">
-                      Select a date to see times
+
+                      {appFound && isStartBlock && (
+                        <button 
+                          onClick={() => handleDeleteAppointment(appFound.id)}
+                          className="p-1 rounded text-rose-300 hover:text-rose-500 hover:bg-rose-50 transition-colors"
+                          title="Cancel Session"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      )}
                     </div>
-                  )}
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Right Column: Performance Metrics */}
+            <div className="lg:col-span-4 space-y-6">
+              <div className="bg-[#6b8e7a] text-white p-5 rounded-3xl shadow-sm">
+                <Flower2 className="text-rose-200 mb-3" size={28} />
+                <h3 className="font-serif text-base mb-3">Daily Performance</h3>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center pb-2 border-b border-emerald-700/30">
+                    <span className="text-xs text-emerald-100 flex items-center gap-1.5"><Briefcase size={12} /> Total Bookings</span>
+                    <span className="font-bold text-sm">
+                      {appointments.filter(app => app.date === selectedDate).length} Sessions
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center pb-2 border-b border-emerald-700/30">
+                    <span className="text-xs text-emerald-100 flex items-center gap-1.5"><Clock size={12} /> Therapy Hours</span>
+                    <span className="font-bold text-sm">
+                      {appointments.filter(app => app.date === selectedDate).reduce((acc, app) => acc + app.duration, 0) / 60} Hours
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs text-emerald-100 flex items-center gap-1.5"><DollarSign size={12} /> Estimated Income</span>
+                    <span className="font-bold text-sm text-rose-200">
+                      ${appointments.filter(app => app.date === selectedDate).reduce((acc, app) => acc + (app.duration === 60 ? 85 : 70), 0)}
+                    </span>
+                  </div>
                 </div>
               </div>
 
-              <div>
-                <label className="block text-xs font-medium text-gray-700 mb-1">Special Wellness Needs or Sensory Notes</label>
-                <textarea 
-                  rows={2} 
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  className="w-full border border-gray-200 rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#6b8e7a] focus:border-transparent outline-none resize-none bg-white text-gray-800"
-                ></textarea>
+              <div className="bg-white p-5 rounded-3xl border border-gray-150 shadow-sm flex flex-col gap-2">
+                <h4 className="font-serif font-medium text-gray-900 text-xs">Dashboard Guide:</h4>
+                <p className="text-[10px] text-gray-500 leading-relaxed text-justify">
+                  You can seamlessly switch back and forth between the Parent Portal and the Owner Dashboard. Booking a session will automatically lock those blocks in real-time.
+                </p>
               </div>
-
-              <button 
-                type="submit" 
-                disabled={isSubmitting}
-                className="w-full bg-[#6b8e7a] hover:bg-[#5a7a68] disabled:bg-gray-400 text-white font-medium py-3 rounded-xl transition-colors mt-2 flex items-center justify-center gap-2"
-              >
-                {isSubmitting ? (
-                  <>
-                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Submitting...
-                  </>
-                ) : 'Submit Request'}
-              </button>
-            </form>
-          </div>
-        ) : (
-          <div className="p-12 text-center flex flex-col items-center">
-            <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-emerald-500 mb-6">
-              <CheckIcon size={32} strokeWidth={3} />
             </div>
-            <h2 className="text-2xl font-serif text-gray-900 mb-2">Request Received!</h2>
-            <p className="text-gray-600 mb-8">
-              Thank you for choosing Little Lotus Wellness. Your request for **{formatDateToMMDDYYYY(date)}** at **{timeSlot}** has been sent to **littlelotuswellness@proton.me**. We will contact you shortly to confirm your appointment time.
-            </p>
-            <button 
-              onClick={onClose}
-              className="bg-gray-100 hover:bg-gray-200 text-gray-800 font-medium px-8 py-3 rounded-full transition-colors"
-            >
-              Close Window
-            </button>
           </div>
         )}
       </div>
@@ -1838,22 +2059,4 @@ function BookingModal({ onClose }: BookingModalProps) {
   );
 }
 
-// Simple check icon for the success state
-function CheckIcon(props: React.SVGProps<SVGSVGElement> & { size?: number }) {
-  const { size = 24, ...rest } = props;
-  return (
-    <svg 
-      width={size}
-      height={size}
-      {...rest} 
-      xmlns="http://www.w3.org/2000/svg" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeLinecap="round" 
-      strokeLinejoin="round"
-    >
-      <polyline points="20 6 9 17 4 12"></polyline>
-    </svg>
-  );
-}
+
