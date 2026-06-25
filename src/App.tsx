@@ -287,7 +287,7 @@ export default function App() {
                 <div>
                   <p className="font-semibold text-white">Trading Hours:</p>
                   <p>Tuesday – Saturday, 11:00 AM – 07:00 PM</p>
-                  <p className="text-xs text-pink-300 font-semibold">(Closed Sunday & Monday)</p>
+                  <p className="text-xs text-pink-400 font-bold">(Closed Sunday & Monday)</p>
                 </div>
               </div>
               <div className="flex items-start gap-3">
@@ -1234,7 +1234,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
                 <div>
                   <span className="font-semibold block text-gray-900 text-sm">Trading Hours</span>
                   <span className="text-sm">Tuesday – Saturday: 11:00 AM – 07:00 PM</span>
-                  <span className="text-xs text-pink-500 block mt-0.5 font-semibold">(Closed Sunday & Monday)</span>
+                  <span className="text-xs text-pink-650 block mt-0.5 font-bold text-pink-600">(Closed Sunday & Monday)</span>
                 </div>
               </li>
               <li className="flex items-start gap-3">
