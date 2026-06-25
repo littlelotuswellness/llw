@@ -1226,7 +1226,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
 
         {/* Location Box embedded in FAQ/Contact area */}
         <div className="mt-6 bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 flex flex-col md:flex-row">
-          <div className="bg-rose-50 p-8 md:w-1/2 flex flex-col justify-center">
+          <div className="bg-rose-50 p-8 md:w-[55%] flex flex-col justify-center">
             <h3 className="text-2xl font-serif text-gray-900 mb-6">Visit Our Wellness</h3>
             <ul className="space-y-4 text-gray-600">
               <li className="flex items-start gap-3">
@@ -1268,7 +1268,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
               <p className="text-sm text-gray-500 font-medium">✓ Just minutes from Marietta Square</p>
             </div>
           </div>
-          <div className="md:w-1/2 bg-gray-200 min-h-[300px] relative">
+          <div className="md:w-[45%] bg-gray-200 min-h-[300px] relative">
             <iframe 
               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3310.233069150036!2d-84.544773824289!3d33.94799042337775!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x88f515e06180572b%3A0xb3660df890b0e513!2s316%20Alexander%20St%20SE%20%232%2C%20Marietta%2C%20GA%2030060!5e0!3m2!1sen!2sus!4v1718139000000!5m2!1sen!2sus" 
               width="100%" 
