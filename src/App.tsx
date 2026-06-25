@@ -1326,8 +1326,7 @@ function BookingModal({ onClose }: BookingModalProps) {
     '05:00 PM',
     '05:30 PM',
     '06:00 PM',
-    '06:30 PM',
-    '07:00 PM'
+    '06:30 PM'
   ];
 
   // Fetch date availability on mount
@@ -1389,18 +1388,20 @@ function BookingModal({ onClose }: BookingModalProps) {
   };
 
   const isSlotOverlapping = (candidateSlot: string, candidateDuration: string, bookedList: { slot: string; duration: string }[]): boolean => {
+    const serviceMinutes = candidateDuration.includes('60') || candidateDuration.includes('1 Hour') ? 60 : 30;
     const candidateStart = getSlotMinutes(candidateSlot);
-    const candidateEnd = candidateStart + (candidateDuration.includes('60') || candidateDuration.includes('1 Hour') ? 60 : 30);
+    const candidateEnd = candidateStart + serviceMinutes + 15; // 15 mins Buffer
     
-    // 1. Check if runs past 07:00 PM (1140 minutes)
-    if (candidateEnd > 19 * 60) {
+    // 1. Cut-off time check: service must end by 07:00 PM (1140 minutes)
+    if (candidateStart + serviceMinutes > 19 * 60) {
       return true;
     }
 
-    // 2. Check overlap with booked slots
+    // 2. Check overlap with booked slots (with their buffer times)
     for (const booking of bookedList) {
+      const bookedServiceMinutes = booking.duration.includes('60') || booking.duration.includes('1 Hour') ? 60 : 30;
       const bookedStart = getSlotMinutes(booking.slot);
-      const bookedEnd = bookedStart + (booking.duration.includes('60') || booking.duration.includes('1 Hour') ? 60 : 30);
+      const bookedEnd = bookedStart + bookedServiceMinutes + 15; // 15 mins Buffer
       
       // Overlap check
       if (candidateStart < bookedEnd && candidateEnd > bookedStart) {
