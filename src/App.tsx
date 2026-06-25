@@ -16,7 +16,8 @@ import {
   ShoppingCart,
   Plus,
   Minus,
-  Trash2
+  Trash2,
+  Clock
 } from 'lucide-react';
 
 interface Product {
@@ -1207,24 +1208,48 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
           })}
         </div>
 
+        {/* Trading Hours Alert Banner above location box */}
+        <div className="mt-16 bg-[#6b8e7a]/5 border border-[#6b8e7a]/20 rounded-2xl p-4 flex items-center justify-center gap-3 text-center">
+          <Clock className="text-[#6b8e7a]" size={20} />
+          <span className="text-sm text-[#5a7a68] font-medium">
+            <strong>Trading Hours:</strong> Tuesday – Saturday, 11:00 AM – 07:00 PM (Closed Sunday & Monday)
+          </span>
+        </div>
+
         {/* Location Box embedded in FAQ/Contact area */}
-        <div className="mt-16 bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 flex flex-col md:flex-row">
+        <div className="mt-6 bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 flex flex-col md:flex-row">
           <div className="bg-rose-50 p-8 md:w-1/2 flex flex-col justify-center">
             <h3 className="text-2xl font-serif text-gray-900 mb-6">Visit Our Wellness</h3>
             <ul className="space-y-4 text-gray-600">
               <li className="flex items-start gap-3">
+                <Clock className="text-[#6b8e7a] shrink-0 mt-1" size={20} />
+                <div>
+                  <span className="font-semibold block text-gray-900 text-sm">Trading Hours</span>
+                  <span className="text-sm">Tuesday – Saturday: 11:00 AM – 07:00 PM</span>
+                </div>
+              </li>
+              <li className="flex items-start gap-3">
                 <MapPin className="text-[#6b8e7a] shrink-0 mt-1" size={20} />
-                <span>316 Alexander St SE, Suite 2<br/>Marietta, GA 30060</span>
+                <div>
+                  <span className="font-semibold block text-gray-900 text-sm">Address</span>
+                  <span className="text-sm">316 Alexander St SE, Suite 2<br/>Marietta, GA 30060</span>
+                </div>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="text-[#6b8e7a] shrink-0" size={20} />
-                <span>404-217-2717</span>
+                <div>
+                  <span className="font-semibold block text-gray-900 text-sm">Phone</span>
+                  <span className="text-sm">404-217-2717</span>
+                </div>
               </li>
               <li className="flex items-center gap-3">
                 <Mail className="text-[#6b8e7a] shrink-0" size={20} />
-                <a href="mailto:littlelotuswellness@proton.me" className="hover:underline hover:text-[#5a7a68] transition-colors">
-                  littlelotuswellness@proton.me
-                </a>
+                <div>
+                  <span className="font-semibold block text-gray-900 text-sm">Email</span>
+                  <a href="mailto:littlelotuswellness@proton.me" className="text-sm hover:underline hover:text-[#5a7a68] transition-colors">
+                    littlelotuswellness@proton.me
+                  </a>
+                </div>
               </li>
             </ul>
             <div className="mt-6 pt-6 border-t border-rose-200">
@@ -1276,15 +1301,15 @@ function BookingModal({ onClose }: BookingModalProps) {
   const [availability, setAvailability] = useState<Record<string, { status: string; available_slots: number }>>({});
 
   const timeSlots = [
-    '09:00 AM',
-    '10:00 AM',
     '11:00 AM',
     '12:00 PM',
     '01:00 PM',
     '02:00 PM',
     '03:00 PM',
     '04:00 PM',
-    '05:00 PM'
+    '05:00 PM',
+    '06:00 PM',
+    '07:00 PM'
   ];
 
   // Fetch date availability on mount
@@ -1481,13 +1506,15 @@ function BookingModal({ onClose }: BookingModalProps) {
       const dayStr = String(d.getDate()).padStart(2, '0');
       const dateStr = `${yearStr}-${monthStr}-${dayStr}`;
       
+      const dayOfWeek = d.getDay();
+      const isClosed = dayOfWeek === 0 || dayOfWeek === 1; // Closed on Sunday (0) and Monday (1)
       const isPast = d < todayMidnight;
       const dayAvail = availability[dateStr];
       const isBooked = dayAvail ? (dayAvail.status === 'booked' || dayAvail.available_slots === 0) : false;
       const isSelected = date === dateStr;
       
       let btnClass = "h-8 w-8 rounded-full text-xs flex items-center justify-center transition-all ";
-      let isDisabled = isPast || isBooked;
+      let isDisabled = isPast || isBooked || isClosed;
       
       if (isSelected) {
         btnClass += "bg-[#6b8e7a] text-white font-semibold shadow-sm";
@@ -1504,7 +1531,7 @@ function BookingModal({ onClose }: BookingModalProps) {
           disabled={isDisabled}
           onClick={() => handleDateChange(dateStr)}
           className={btnClass}
-          title={isBooked ? "Fully Booked" : ""}
+          title={isClosed ? "Closed" : isBooked ? "Fully Booked" : ""}
         >
           {day}
         </button>
@@ -1555,7 +1582,12 @@ function BookingModal({ onClose }: BookingModalProps) {
         {step === 1 ? (
           <div className="p-8 max-h-[90vh] overflow-y-auto">
             <h2 className="text-2xl font-serif text-[#6b8e7a] mb-2">Request an Appointment</h2>
-            <p className="text-gray-500 text-sm mb-6">Please fill out this brief pre-appointment intake form so we can individualize your child's session.</p>
+            <p className="text-gray-500 text-sm mb-4">Please fill out this brief pre-appointment intake form so we can individualize your child's session.</p>
+            
+            <div className="mb-6 p-3 bg-emerald-50 text-emerald-800 rounded-xl text-xs border border-emerald-100 flex items-center gap-2">
+              <Clock size={14} className="text-[#6b8e7a]" />
+              <span><strong>Trading Hours:</strong> Tuesday – Saturday, 11:00 AM – 07:00 PM (Closed Sunday & Monday)</span>
+            </div>
             
             {error && (
               <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-xl text-sm border border-red-100">
