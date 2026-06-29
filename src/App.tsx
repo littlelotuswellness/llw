@@ -1180,7 +1180,7 @@ Ultimately, Little Lotus Wellness is the ideal choice because we provide a safe,
     },
     {
       q: "What is your cancellation policy?",
-      a: "Appointments canceled within 48 hours of the scheduled appointment time will incur a 100% cancellation fee."
+      a: "Appointments canceled within 24 hours of the scheduled appointment time will incur a 50% cancellation fee. No show 100% cancellation fee applies."
     }
   ];
 
